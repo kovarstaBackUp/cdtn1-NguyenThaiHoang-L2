@@ -11,13 +11,13 @@
 
 ### 1.1. Bối cảnh
 
-Công ty Cổ phần Bán lẻ & Dịch vụ Mekong Mobile có 24 cửa hàng bán lẻ, 6 trung tâm bảo hành và hơn 65.000 khách hàng. Việc tiếp nhận bảo hành hiện làm thủ công bằng phiếu giấy và Excel rải rác, khiến khoảng 15% phiếu bị quá hạn mà không có cảnh báo. Dự án Smart CRM giải quyết vấn đề này bằng cách chia nghiệp vụ thành các luồng độc lập; tài liệu này chỉ đặc tả luồng L2.
+Công ty Cổ phần Bán lẻ & Dịch vụ Mekong Mobile có 24 cửa hàng bán lẻ, 6 trung tâm bảo hành và hơn 65.000 khách hàng. Việc tiếp nhận bảo hành hiện làm thủ công bằng phiếu giấy và Excel rải rác, khiến khoảng 15% phiếu bị quá hạn mà không có cảnh báo. Vấn đề thứ hai là mô tả lỗi do khách kể được ghi tự do bằng chữ, không phân nhóm, nên không thống kê được nguyên nhân bảo hành phổ biến nhất để làm việc với nhà cung cấp (V8) - đây là lý do L2 bắt buộc gắn nhóm sự cố cho mọi phiếu. Dự án Smart CRM giải quyết vấn đề này bằng cách chia nghiệp vụ thành các luồng độc lập; tài liệu này chỉ đặc tả luồng L2.
 
 ### 1.2. Phạm vi của L2
 
 Nhân viên tiếp nhận tra cứu khách bằng số điện thoại, ghi nhận thiết bị và mô tả lỗi, gắn nhóm sự cố, chọn mức ưu tiên. Hệ thống tự tính hạn cam kết (SLA) và lưu phiếu ở trạng thái MỚI. Quản lý trung tâm duyệt các phiếu thiếu ngày mua và theo dõi phiếu theo hạn cam kết. Kỹ thuật viên xem được phiếu của trung tâm kèm mã màu hạn.
 
-Thông báo hiển thị bên trong ứng dụng (cảnh báo cho Quản lý ở UC6, thông báo cho Nhân viên tiếp nhận ở UC5) thuộc phạm vi.
+Thông báo hiển thị bên trong ứng dụng (cảnh báo cho Quản lý trung tâm ở UC6, thông báo cho Nhân viên tiếp nhận ở UC5) thuộc phạm vi.
 
 ### 1.3. Ngoài phạm vi (WON'T)
 
@@ -27,6 +27,7 @@ Thông báo hiển thị bên trong ứng dụng (cảnh báo cho Quản lý ở
 - Khảo sát hài lòng CSAT/NPS (luồng L8).
 - Tự động phân loại sự cố bằng học máy (luồng L10). Ở L2, nhân viên tự chọn nhóm sự cố và mức ưu tiên.
 - Sửa hoặc hủy phiếu, sửa hồ sơ khách sau khi đã lưu.
+- Lịch sử trao đổi với khách theo từng phiếu (ai, khi nào): không thuộc L2.
 - Chuyển quyền sở hữu thiết bị từ khách này sang khách khác.
 
 ### 1.4. Thuật ngữ
@@ -41,13 +42,13 @@ Tên kỹ thuật chỉ xuất hiện trong bảng này; các phần còn lại 
 | Thiết bị mua ngoài | Thiết bị khách mua ở nơi khác, không có trong lịch sử mua hàng nên không có ngày mua. Vẫn được đăng ký và tiếp nhận. | `device.is_external` |
 | Phiếu bảo hành | Yêu cầu bảo hành được ghi nhận, có mã duy nhất dạng `BH-xxxxxx/yyyy` (yyyy là năm tiếp nhận) và có vòng đời trạng thái. | `ticket` |
 | Trạng thái phiếu | Vị trí của phiếu trong vòng đời xử lý (BR-07). L2 chỉ tạo phiếu ở trạng thái MỚI. | `status` |
-| Cờ chờ xác minh bảo hành | Dấu hiệu phiếu chưa xác minh được ngày mua và cần Quản lý phê duyệt. Là thuộc tính riêng của phiếu, không phải trạng thái vòng đời. | `is_verified` (false = chờ xác minh) |
-| Hình thức phiếu | Bảo hành miễn phí hoặc Sửa chữa có tính phí. | `is_warranty` |
+| Cờ chờ xác minh bảo hành | Dấu hiệu phiếu chưa xác minh được ngày mua và cần Quản lý trung tâm phê duyệt. Là thuộc tính riêng của phiếu, không phải trạng thái vòng đời. | `is_verified` (false = chờ xác minh) |
+| Hình thức phiếu | Bảo hành miễn phí hoặc Sửa chữa có tính phí. Để **chưa xác định** khi phiếu đang chờ xác minh; chỉ chốt sau quyết định của Quản lý trung tâm (BR-14). | `is_warranty` (được phép rỗng) |
 | Hạn cam kết (SLA) | Thời điểm chậm nhất phải hoàn thành phiếu, tính từ lúc tiếp nhận theo mức ưu tiên (BR-09, BR-10). | `due_date` |
 | Nhóm sự cố | Nhãn phân loại nguyên nhân bảo hành, lấy từ một danh mục dùng chung. Danh mục khởi tạo gồm Màn hình, Pin, Sạc, Phần mềm, Nước vào, Khác; nhân viên được thêm nhóm mới (BR-15). | `issue_category` |
 | Nhãn phiếu | Các nhóm sự cố được gắn cho một phiếu; một phiếu gắn được nhiều nhóm. | `ticket_issue` |
 | Mức ưu tiên | Mức khẩn cấp của phiếu: Cao, Trung bình, Thấp. Quyết định hạn cam kết. | `priority` (`CAO`, `TRUNG_BINH`, `THAP`) |
-| Nhật ký trạng thái | Bản ghi mỗi lần phiếu đổi trạng thái hoặc hình thức, kèm người thực hiện, thời điểm và lý do (nếu có). | `ticket_status_log` |
+| Nhật ký trạng thái | Bản ghi mỗi lần phiếu **đổi trạng thái**, kèm người thực hiện, thời điểm và ghi chú (nếu có). Dòng đầu tiên được ghi ngay khi tạo phiếu (BR-07). Quyết định về hình thức bảo hành được lưu trên phiếu, không ghi vào nhật ký này (BR-14). | `ticket_status_log` |
 
 ---
 
@@ -61,31 +62,33 @@ Tên kỹ thuật chỉ xuất hiện trong bảng này; các phần còn lại 
 
 Ngoài ba vai trò trên còn có tác nhân hệ thống "tác vụ định kỳ nhắc hạn" (UC6), là thành phần của hệ thống chứ không phải người dùng.
 
+Ban giám đốc không có màn hình riêng trong L2 và không được thêm thành vai trò của luồng này. Quyền của Ban giám đốc theo QT-14 và QT-15 vẫn giữ nguyên trong BR-17 và NFR2, không thu hẹp.
+
 ---
 
 ## 3. Quy tắc nghiệp vụ
 
-Các quy tắc dưới đây là nguồn duy nhất; user story và use case chỉ dẫn chiếu tới. Quy tắc của các luồng khác không thuộc phạm vi L2.
+Các quy tắc nghiệp vụ của L2 nằm ở đây; user story và use case chỉ dẫn chiếu tới, không nhắc lại nội dung. Quy tắc của các luồng khác không thuộc phạm vi L2. Ba quy tắc hiện được nêu trong phần mô tả story thay vì ở bảng này: ngưỡng cảnh báo lỗi lặp lại (US11), định nghĩa "trong ngày" (US8) và thứ tự sắp xếp bảng theo dõi (US7). Bảng đối chiếu nguồn ở mục 6.3.
 
 | Mã | Quy tắc | Nội dung |
 | :--- | :--- | :--- |
 | BR-01 | Duy nhất số điện thoại | SĐT khách là duy nhất trong hệ thống. Nhập số đã có thì hiển thị hồ sơ sẵn có, không tạo hồ sơ mới. |
 | BR-02 | Chuẩn hóa số điện thoại | Trước khi kiểm tra và lưu, SĐT được chuẩn hóa về 10 chữ số bắt đầu bằng `0`. Các dạng `+84901234567`, `84901234567`, `090 123 4567`, `090.123.4567` đều thành `0901234567`. Chuỗi không thành 10 chữ số sau chuẩn hóa là sai định dạng. |
 | BR-03 | Duy nhất thiết bị | Thiết bị được xác định bằng số serial/IMEI. Một thiết bị chỉ thuộc một khách tại một thời điểm. |
-| BR-04 | Thiết bị mua ngoài | Thiết bị không có trong lịch sử mua hàng vẫn được đăng ký cho khách; bắt buộc nhập serial/IMEI và ghi chú nguồn gốc. Thiết bị được đánh dấu là mua ngoài, không có hồ sơ mua. |
+| BR-04 | Thiết bị mua ngoài | Thiết bị không có trong lịch sử mua hàng vẫn được đăng ký cho khách; bắt buộc nhập serial/IMEI và ghi chú nguồn gốc. Ngày mua để rỗng, trừ khi khách xuất trình hóa đơn thì nhân viên nhập ngày mua và nơi mua theo hóa đơn (Mục 6.1 bước 3). Thiết bị được đánh dấu là mua ngoài, không có hồ sơ mua. |
 | BR-05 | Xung đột serial/IMEI | Serial/IMEI đang thuộc khách khác thì không được gắn cho khách hiện tại. Nhân viên báo Quản lý trung tâm xử lý ngoài hệ thống, vì L2 không hỗ trợ chuyển quyền sở hữu. |
-| BR-06 | Một phiếu mở cho mỗi thiết bị | Một thiết bị chỉ có tối đa một phiếu chưa đóng tại một thời điểm. |
-| BR-07 | Vòng đời trạng thái | Trạng thái chỉ tiến, không quay lại. L2 chỉ tạo phiếu ở trạng thái MỚI; các trạng thái sau do các luồng khác định nghĩa. Mọi lần chuyển trạng thái đều ghi vào nhật ký trạng thái. Cờ chờ xác minh không phải trạng thái. |
+| BR-06 | Một phiếu mở cho mỗi thiết bị | Một thiết bị chỉ có tối đa một phiếu chưa đạt trạng thái Đã đóng tại một thời điểm. |
+| BR-07 | Vòng đời trạng thái | Trạng thái chỉ tiến, không quay lại. L2 chỉ tạo phiếu ở trạng thái MỚI, và khi tạo phải ghi ngay một dòng nhật ký trạng thái (`from_status` rỗng → MỚI, kèm người tạo và thời điểm). Các trạng thái sau MỚI do luồng khác điều khiển nhưng dùng chung một vòng đời (case study Hình 6.2); hủy phiếu (ĐÃ HỦY) và mở lại phiếu đã đóng đều thuộc luồng khác. Mọi lần chuyển trạng thái đều ghi vào nhật ký trạng thái. Cờ chờ xác minh không phải trạng thái. |
 | BR-08 | Mã phiếu | Dạng `BH-xxxxxx/yyyy`: xxxxxx là số thứ tự 6 chữ số tăng dần trên toàn hệ thống, bắt đầu lại từ `000001` mỗi năm; yyyy là năm tiếp nhận. Mã không tái sử dụng, không sửa được và vẫn duy nhất khi nhiều người lưu cùng lúc. |
-| BR-09 | Tính hạn cam kết | Hạn cam kết tính từ lúc lưu phiếu: mức Cao 24 giờ, Trung bình 72 giờ, Thấp 120 giờ. |
-| BR-10 | Loại trừ Chủ Nhật | Giờ cam kết tính liên tục, nhưng ngày Chủ Nhật không được tính: đồng hồ dừng suốt Chủ Nhật và chạy lại từ 00:00 Thứ Hai. Ngày lễ chưa được loại trừ trong L2. Ví dụ ở bảng dưới. |
-| BR-11 | Mã màu hạn cam kết | Dựa trên phần trăm thời gian còn lại so với tổng thời gian SLA của phiếu. Xanh: còn từ 25% trở lên. Vàng: còn dưới 25% và lớn hơn 0. Đỏ: đã quá hạn. |
+| BR-09 | Tính hạn cam kết | Hạn cam kết tính từ **thời điểm tiếp nhận** (thời điểm hệ thống chấp nhận lưu phiếu lần đầu, tức `received_at`): mức Cao 24 giờ, Trung bình 72 giờ, Thấp 120 giờ (QT-04). |
+| BR-10 | Loại trừ Chủ Nhật | Giờ cam kết tính liên tục, nhưng ngày Chủ Nhật không được tính: đồng hồ dừng suốt Chủ Nhật và chạy lại từ 00:00 Thứ Hai. Đồng hồ **không** dừng vì bất kỳ lý do nào khác, kể cả khi phiếu đang chờ linh kiện. Ngày lễ chưa được loại trừ trong L2. Ví dụ ở bảng dưới. |
+| BR-11 | Mã màu hạn cam kết | Dựa trên phần trăm thời gian còn lại so với tổng thời gian SLA của phiếu. Xanh: còn từ 25% trở lên. Vàng: còn dưới 25% và lớn hơn 0. Đỏ: đã tới hạn hoặc quá hạn (còn 0% trở xuống). |
 | BR-12 | Điều kiện bảo hành | Thiết bị còn bảo hành nếu ngày tiếp nhận không muộn hơn ngày mua cộng số tháng bảo hành (cộng theo tháng lịch). Số tháng bảo hành lấy từ dữ liệu mua hàng của thiết bị. |
-| BR-13 | Cờ chờ xác minh | Khi thiết bị không có ngày mua, hệ thống tự gắn cờ chờ xác minh; nhân viên không tự đánh dấu. Phiếu vẫn được tiếp nhận, hình thức phiếu chưa chốt cho đến khi Quản lý quyết định. |
-| BR-14 | Quyết định phiếu chờ xác minh | Chỉ Quản lý trung tâm được duyệt hoặc từ chối bảo hành miễn phí. Khi từ chối bắt buộc nhập lý do; hệ thống lưu người quyết định, thời điểm và lý do. |
+| BR-13 | Cờ chờ xác minh | Khi thiết bị không có ngày mua, hệ thống tự gắn cờ chờ xác minh; nhân viên không tự đánh dấu. Phiếu vẫn được tiếp nhận; hình thức phiếu để **chưa xác định** (giá trị rỗng), không mặc định là miễn phí hay tính phí, cho đến khi Quản lý trung tâm quyết định. |
+| BR-14 | Quyết định phiếu chờ xác minh | Chỉ Quản lý trung tâm được duyệt hoặc từ chối bảo hành miễn phí. Khi từ chối bắt buộc nhập lý do; hệ thống lưu **trên phiếu** người quyết định, thời điểm và lý do, không ghi vào nhật ký trạng thái. |
 | BR-15 | Nhóm sự cố | Nhóm sự cố nằm trong danh mục dùng chung. Nhân viên được thêm nhóm mới; tên nhóm được cắt khoảng trắng đầu cuối và so khớp không phân biệt hoa thường, nên không có hai nhóm trùng tên. Nhóm mới phải vào danh mục trước khi gắn vào phiếu. Mỗi phiếu gắn tối đa 5 nhóm, không gắn một nhóm hai lần. |
 | BR-16 | Xóa mềm | Không xóa vĩnh viễn khách hàng, thiết bị, phiếu hay nhóm sự cố; chỉ đánh dấu ẩn để giữ dữ liệu lịch sử. |
-| BR-17 | Phạm vi theo trung tâm | Mỗi tài khoản nhân viên thuộc một trung tâm; phiếu thuộc trung tâm của tài khoản lập phiếu. Quản lý và Kỹ thuật viên chỉ xem phiếu của trung tâm mình; Quản lý lọc thêm được theo nhân viên tiếp nhận. |
+| BR-17 | Phạm vi theo trung tâm | Hồ sơ khách hàng và thiết bị dùng chung toàn công ty: nhân viên tiếp nhận tra cứu được khách đã mua ở bất kỳ cửa hàng nào. Riêng **phiếu** thì theo trung tâm: phiếu thuộc trung tâm của tài khoản lập phiếu; Quản lý trung tâm và Kỹ thuật viên chỉ xem phiếu của trung tâm mình; Quản lý trung tâm lọc thêm được theo nhân viên tiếp nhận. Theo QT-14, Quản lý xem được toàn bộ đơn vị mình phụ trách và Ban giám đốc xem được toàn công ty; L2 không xây màn hình riêng cho Ban giám đốc. |
 
 Ví dụ cho BR-09 và BR-10:
 
@@ -111,7 +114,7 @@ Ví dụ cho BR-09 và BR-10:
 | US5 | Nhân viên tiếp nhận | Gắn nhóm sự cố cho phiếu | MUST |
 | US6 | Nhân viên tiếp nhận | Tự động tính hạn cam kết | MUST |
 | US7 | Quản lý trung tâm | Bảng theo dõi hạn cam kết của phiếu | MUST |
-| US8 | Nhân viên tiếp nhận, Quản lý trung tâm | Xem và xuất danh sách phiếu tiếp nhận trong ngày | MUST |
+| US8 | Nhân viên tiếp nhận | Xem và xuất danh sách phiếu tiếp nhận trong ngày | MUST |
 | US9 | Nhân viên tiếp nhận | Tự xác định bảo hành miễn phí hay sửa chữa tính phí | SHOULD |
 | US10 | Quản lý trung tâm | Duyệt hoặc từ chối bảo hành miễn phí | SHOULD |
 | US11 | Nhân viên tiếp nhận | Cảnh báo thiết bị bảo hành nhiều lần cùng một lỗi | COULD |
@@ -179,13 +182,17 @@ Là nhân viên tiếp nhận, tôi muốn chọn thiết bị từ lịch sử 
   - When: nhân viên gắn thiết bị đó vào khách hiện tại.
   - Then: hệ thống từ chối (BR-05) và báo nhân viên chuyển Quản lý trung tâm xử lý.
 - AC3.4 Thiết bị đang có phiếu mở
-  - Given: thiết bị `SN-PHONE-123` đang có một phiếu chưa đóng.
+  - Given: thiết bị `SN-PHONE-123` đang có một phiếu chưa đạt trạng thái Đã đóng.
   - When: nhân viên chọn thiết bị đó.
   - Then: hệ thống hiển thị mã phiếu đang mở và không cho tạo phiếu thứ hai (BR-06).
 - AC3.5 Thiếu serial
   - Given: nhân viên đăng ký thiết bị mua ngoài nhưng để trống serial/IMEI.
   - When: nhân viên lưu phiếu.
   - Then: hệ thống từ chối và báo "Số serial/IMEI là trường bắt buộc".
+- AC3.6 Khách xuất trình hóa đơn
+  - Given: thiết bị không có trong lịch sử mua hàng, nhưng khách có hóa đơn mua ở nơi khác.
+  - When: nhân viên nhập ngày mua và nơi mua theo hóa đơn rồi lưu phiếu.
+  - Then: hệ thống lưu ngày mua đó cho thiết bị, xác định điều kiện bảo hành theo ngày mua vừa nhập (BR-12) và không gắn cờ chờ xác minh (BR-13).
 
 #### US4 [MUST] Lập phiếu bảo hành mới
 
@@ -207,6 +214,10 @@ Là nhân viên tiếp nhận, tôi muốn lập phiếu bảo hành cho thiết
   - Given: nhân viên chưa gắn nhóm sự cố hoặc chưa chọn mức ưu tiên.
   - When: nhân viên lưu phiếu.
   - Then: hệ thống không cho lưu và yêu cầu chọn cả hai, vì mức ưu tiên là đầu vào của hạn cam kết (BR-09).
+- AC4.5 Ghi phụ kiện kèm theo và tình trạng ngoại quan
+  - Given: khách gửi kèm sạc và tai nghe, máy bị trầy ở góc.
+  - When: nhân viên ghi phụ kiện kèm theo (Sạc / Tai nghe / Hộp / Khác) và tình trạng ngoại quan của máy.
+  - Then: hệ thống lưu hai thông tin này trên phiếu và in ra ở phiếu nhận máy; cả hai đều không bắt buộc.
 
 #### US5 [MUST] Gắn nhóm sự cố cho phiếu
 
@@ -252,21 +263,23 @@ Là nhân viên tiếp nhận, tôi muốn hệ thống tự tính hạn cam k�
 
 #### US7 [MUST] Bảng theo dõi hạn cam kết của phiếu
 
-Là Quản lý trung tâm hoặc Kỹ thuật viên, tôi muốn mở bảng theo dõi các phiếu của trung tâm kèm mã màu hạn cam kết để ưu tiên xử lý phiếu sắp trễ trước khi vi phạm cam kết với khách.
+Là Quản lý trung tâm, tôi muốn mở bảng theo dõi các phiếu của trung tâm kèm mã màu hạn cam kết để ưu tiên xử lý phiếu sắp trễ trước khi vi phạm cam kết với khách.
 
-Bảng liệt kê các phiếu chưa đóng của trung tâm, xếp Đỏ trước, rồi Vàng, rồi Xanh.
+Phần mở rộng đã khai báo: Kỹ thuật viên xem cùng bảng ở chế độ chỉ đọc và không nhận cảnh báo quá hạn (AC7.5, BR-17).
+
+Bảng liệt kê các phiếu **chưa đạt trạng thái Hoàn tất** của trung tâm, xếp Đỏ trước, rồi Vàng, rồi Xanh. Phiếu đã Hoàn tất nhưng khách chưa đến lấy máy không còn bị tính hạn và không còn trên bảng.
 
 - AC7.1 Mã màu
   - Given: ba phiếu có thời gian SLA còn lại lần lượt là 60%, 10% và đã quá hạn.
-  - When: Quản lý mở bảng theo dõi.
+  - When: Quản lý trung tâm mở bảng theo dõi.
   - Then: ba phiếu hiển thị lần lượt màu Xanh, Vàng và Đỏ (BR-11).
 - AC7.2 Không có phiếu
-  - Given: trung tâm không có phiếu nào chưa đóng.
-  - When: Quản lý mở bảng theo dõi.
+  - Given: trung tâm không có phiếu nào chưa hoàn tất.
+  - When: Quản lý trung tâm mở bảng theo dõi.
   - Then: hệ thống hiển thị bảng trống kèm "Trung tâm hiện không có phiếu nào đang xử lý".
 - AC7.3 Lọc theo nhân viên
-  - Given: Quản lý đang xem bảng của trung tâm mình.
-  - When: Quản lý lọc theo một nhân viên tiếp nhận.
+  - Given: Quản lý trung tâm đang xem bảng của trung tâm mình.
+  - When: Quản lý trung tâm lọc theo một nhân viên tiếp nhận.
   - Then: bảng chỉ còn phiếu do nhân viên đó lập trong trung tâm (BR-17).
 - AC7.4 Cảnh báo quá hạn
   - Given: một phiếu vừa chuyển sang màu Đỏ.
@@ -281,6 +294,8 @@ Bảng liệt kê các phiếu chưa đóng của trung tâm, xếp Đỏ trư�
 
 Là nhân viên tiếp nhận, tôi muốn xem và in danh sách phiếu do mình lập trong ngày để rà soát thông tin và bàn giao cho Quản lý trung tâm.
 
+Phần mở rộng đã khai báo: Quản lý trung tâm xem được danh sách của cả trung tâm và lọc theo nhân viên tiếp nhận (AC8.4, BR-17).
+
 "Trong ngày" là từ 00:00 đến 23:59 của ngày hiện tại theo giờ Việt Nam.
 
 - AC8.1 Có phiếu
@@ -294,11 +309,11 @@ Là nhân viên tiếp nhận, tôi muốn xem và in danh sách phiếu do mìn
 - AC8.3 In và xuất file
   - Given: danh sách trong ngày đang hiển thị.
   - When: nhân viên chọn in danh sách bàn giao hoặc xuất Excel.
-  - Then: bản in hoặc file có đủ các cột của bảng và SĐT khách ở dạng che (NFR2).
+  - Then: bản in hoặc file có đủ các cột của bảng và SĐT khách hiển thị theo quyền của người dùng (NFR2).
 - AC8.4 Góc nhìn Quản lý trung tâm
-  - Given: Quản lý mở danh sách trong ngày.
+  - Given: Quản lý trung tâm mở danh sách trong ngày.
   - When: danh sách hiển thị.
-  - Then: Quản lý thấy phiếu của cả trung tâm và lọc được theo nhân viên (BR-17).
+  - Then: Quản lý trung tâm thấy phiếu của cả trung tâm và lọc được theo nhân viên (BR-17).
 
 #### US9 [SHOULD] Tự xác định bảo hành miễn phí hay sửa chữa tính phí
 
@@ -315,7 +330,7 @@ Là nhân viên tiếp nhận, tôi muốn hệ thống tự xác định thiế
 - AC9.3 Thiếu ngày mua
   - Given: thiết bị không có ngày mua trong hệ thống, ví dụ thiết bị mua ngoài.
   - When: nhân viên lưu phiếu.
-  - Then: hệ thống vẫn lưu phiếu, tự gắn cờ chờ xác minh (BR-13) và đưa phiếu vào danh sách chờ Quản lý quyết định.
+  - Then: hệ thống vẫn lưu phiếu, tự gắn cờ chờ xác minh (BR-13) và đưa phiếu vào danh sách chờ Quản lý trung tâm quyết định.
 - AC9.4 Đúng ngày hết hạn
   - Given: ngày tiếp nhận đúng bằng ngày mua cộng số tháng bảo hành.
   - When: nhân viên lưu phiếu.
@@ -327,30 +342,30 @@ Là Quản lý trung tâm, tôi muốn xem xét và quyết định các phiếu
 
 - AC10.1 Duyệt
   - Given: phiếu đang chờ xác minh.
-  - When: Quản lý mở chi tiết phiếu và duyệt bảo hành miễn phí.
+  - When: Quản lý trung tâm mở chi tiết phiếu và duyệt bảo hành miễn phí.
   - Then: hệ thống bỏ cờ chờ xác minh, ghi hình thức Bảo hành miễn phí, lưu người duyệt và thời điểm duyệt, rồi đưa phiếu sang luồng xử lý chuẩn.
 - AC10.2 Từ chối kèm lý do
   - Given: phiếu đang chờ xác minh.
-  - When: Quản lý từ chối bảo hành miễn phí và nhập lý do.
-  - Then: hệ thống chuyển hình thức sang Sửa chữa có tính phí, ghi lý do vào nhật ký trạng thái và thông báo cho nhân viên đã lập phiếu.
+  - When: Quản lý trung tâm từ chối bảo hành miễn phí và nhập lý do.
+  - Then: hệ thống chuyển hình thức sang Sửa chữa có tính phí, lưu lý do cùng người quyết định và thời điểm trên phiếu, rồi thông báo cho nhân viên đã lập phiếu.
 - AC10.3 Từ chối thiếu lý do
-  - Given: Quản lý chọn từ chối nhưng để trống lý do.
-  - When: Quản lý xác nhận.
+  - Given: Quản lý trung tâm chọn từ chối nhưng để trống lý do.
+  - When: Quản lý trung tâm xác nhận.
   - Then: hệ thống không lưu quyết định và yêu cầu nhập lý do (BR-14).
 
 #### US11 [COULD] Cảnh báo thiết bị bảo hành nhiều lần cùng một lỗi
 
 Là nhân viên tiếp nhận, tôi muốn được cảnh báo khi thiết bị đã bảo hành nhiều lần cùng một lỗi để kịp báo Quản lý trung tâm kiểm tra lô hàng.
 
-Ngưỡng: thiết bị đã có ít nhất 3 phiếu trước đó cùng nhóm sự cố, tức phiếu đang lập là lần thứ 4 trở đi. Hệ thống kiểm tra sau khi nhóm sự cố của phiếu mới được gắn.
+Ngưỡng: phiếu đang lập là **lần thứ 3 trở đi** cùng một nhóm sự cố trên thiết bị, tức thiết bị đã có từ 2 phiếu trước đó cùng nhóm. Hệ thống kiểm tra sau khi nhóm sự cố của phiếu mới được gắn.
 
 - AC11.1 Đạt ngưỡng
-  - Given: thiết bị `SN-PHONE-123` đã có 3 phiếu trước đó cùng nhóm Màn hình.
-  - When: nhân viên gắn nhóm Màn hình cho phiếu mới.
-  - Then: hệ thống hiển thị cảnh báo "Thiết bị đã bảo hành lỗi Màn hình 3 lần. Cần báo Quản lý trung tâm xem xét." và nhân viên vẫn tiếp tục lập phiếu được.
+  - Given: thiết bị `SN-PHONE-123` đã có 2 phiếu trước đó cùng nhóm Màn hình.
+  - When: nhân viên gắn nhóm Màn hình cho phiếu mới, tức lần thứ 3.
+  - Then: hệ thống hiển thị cảnh báo "Thiết bị đã bảo hành lỗi Màn hình 2 lần. Đây là lần thứ 3 - cần báo Quản lý trung tâm xem xét." và nhân viên vẫn tiếp tục lập phiếu được.
 - AC11.2 Chưa đạt ngưỡng
-  - Given: thiết bị chỉ có 2 phiếu trước đó cùng nhóm.
-  - When: nhân viên gắn nhóm đó cho phiếu mới.
+  - Given: thiết bị chỉ có 1 phiếu trước đó cùng nhóm.
+  - When: nhân viên gắn nhóm đó cho phiếu mới, tức lần thứ 2.
   - Then: hệ thống không hiển thị cảnh báo.
 - AC11.3 Không tải được lịch sử
   - Given: hệ thống không tải được lịch sử bảo hành của thiết bị do lỗi kết nối.
@@ -398,7 +413,7 @@ Luồng chính
 
 Luồng ngoại lệ
 - 3a. Khách chưa có trong hệ thống: mở form tạo khách mới (UC3); sau khi lưu khách, quay lại bước 4. `[extend UC3]`
-- 4a. Thiết bị không nằm trong lịch sử mua hàng: nhân viên đăng ký thiết bị mua ngoài với serial/IMEI và ghi chú nguồn gốc (BR-04); hệ thống tự gắn cờ chờ xác minh (BR-13). Thiếu serial thì xem AC3.5.
+- 4a. Thiết bị không nằm trong lịch sử mua hàng: nhân viên đăng ký thiết bị mua ngoài với serial/IMEI và ghi chú nguồn gốc (BR-04); nếu khách có hóa đơn thì nhập thêm ngày mua và nơi mua (AC3.6). Không có ngày mua thì hệ thống tự gắn cờ chờ xác minh (BR-13). Thiếu serial thì xem AC3.5.
 - 4b. Serial thuộc khách khác: hệ thống từ chối gắn (AC3.3).
 - 4c. Thiết bị đang có phiếu mở: hệ thống hiển thị phiếu đó và không cho tạo phiếu thứ hai (AC3.4).
 - 5a. Mô tả lỗi để trống: hệ thống từ chối lưu, dữ liệu đã nhập được giữ lại (AC4.3).
@@ -452,13 +467,13 @@ Luồng ngoại lệ
 - Liên quan: US9, US10 | SHOULD
 
 Luồng chính
-1. Quản lý mở danh sách phiếu chờ xác minh.
-2. Quản lý chọn một phiếu để xem thiết bị, mô tả lỗi và ghi chú nguồn gốc.
-3. Quản lý duyệt bảo hành miễn phí.
-4. Hệ thống bỏ cờ chờ xác minh, ghi hình thức Bảo hành miễn phí, lưu người duyệt và thời điểm duyệt, rồi đưa phiếu sang luồng xử lý chuẩn (AC10.1).
+1. Quản lý trung tâm mở danh sách phiếu chờ xác minh.
+2. Quản lý trung tâm chọn một phiếu để xem thiết bị, mô tả lỗi và ghi chú nguồn gốc.
+3. Quản lý trung tâm duyệt bảo hành miễn phí.
+4. Hệ thống bỏ cờ chờ xác minh, ghi hình thức Bảo hành miễn phí, lưu người duyệt và thời điểm duyệt **trên phiếu**, rồi đưa phiếu sang luồng xử lý chuẩn (AC10.1).
 
 Luồng ngoại lệ
-- 3a. Thiết bị không đủ điều kiện: Quản lý từ chối và nhập lý do; hệ thống chuyển sang Sửa chữa có tính phí, ghi lý do và thông báo cho nhân viên đã lập phiếu (AC10.2).
+- 3a. Thiết bị không đủ điều kiện: Quản lý trung tâm từ chối và nhập lý do; hệ thống chuyển sang Sửa chữa có tính phí, ghi lý do trên phiếu và thông báo cho nhân viên đã lập phiếu (AC10.2).
 - 3b. Từ chối nhưng thiếu lý do: hệ thống không lưu quyết định (AC10.3, BR-14).
 
 #### UC6. Theo dõi hạn cam kết
@@ -467,20 +482,19 @@ Luồng ngoại lệ
 - Tác nhân hệ thống: tác vụ định kỳ nhắc hạn
 - Mục tiêu: theo dõi hạn cam kết và cảnh báo các phiếu có nguy cơ vi phạm.
 - Điều kiện trước: phiếu đã được tạo và có hạn cam kết.
-- Điều kiện sau: mỗi phiếu hiển thị mã màu; phiếu quá hạn được cảnh báo cho Quản lý.
+- Điều kiện sau: mỗi phiếu chưa hoàn tất hiển thị mã màu; phiếu quá hạn được cảnh báo cho Quản lý trung tâm.
 - Liên quan: US7 | MUST
 
 Luồng chính
-1. Quản lý hoặc Kỹ thuật viên mở bảng theo dõi phiếu của trung tâm mình.
-2. Hệ thống tính thời gian còn lại đến hạn của từng phiếu.
+1. Quản lý trung tâm hoặc Kỹ thuật viên mở bảng theo dõi phiếu của trung tâm mình.
+2. Hệ thống tính thời gian còn lại đến hạn của từng phiếu chưa đạt trạng thái Hoàn tất.
 3. Hệ thống hiển thị mã màu theo BR-11.
-4. Quản lý lọc theo nhân viên tiếp nhận nếu cần.
-5. Tác vụ định kỳ nhắc hạn phát cảnh báo trên màn hình Quản lý cho các phiếu chuyển sang Đỏ (AC7.4).
+4. Quản lý trung tâm lọc theo nhân viên tiếp nhận nếu cần.
+5. Tác vụ định kỳ nhắc hạn phát cảnh báo trên màn hình Quản lý trung tâm cho các phiếu chuyển sang Đỏ (AC7.4).
 
 Luồng ngoại lệ
 - 1a. Kỹ thuật viên mở bảng: chỉ thấy phiếu của trung tâm mình và không có cảnh báo quá hạn (AC7.5).
-- 3a. Trung tâm không có phiếu nào chưa đóng: hiển thị bảng trống (AC7.2).
-- 5a. Phiếu chuyển sang Chờ linh kiện: việc tạm dừng đồng hồ SLA do L5 định nghĩa. L2 chỉ yêu cầu hạn cam kết được bù lại thời gian đã tạm dừng khi phiếu tiếp tục xử lý.
+- 3a. Trung tâm không có phiếu nào chưa hoàn tất: hiển thị bảng trống (AC7.2).
 
 #### UC7. Xem danh sách phiếu tiếp nhận trong ngày
 
@@ -492,7 +506,7 @@ Luồng ngoại lệ
 
 Luồng chính
 1. Người dùng mở danh sách phiếu tiếp nhận trong ngày.
-2. Hệ thống lọc phiếu tạo trong ngày hiện tại: nhân viên tiếp nhận chỉ thấy phiếu của mình; Quản lý thấy phiếu của cả trung tâm và lọc được theo nhân viên (BR-17).
+2. Hệ thống lọc phiếu tạo trong ngày hiện tại: nhân viên tiếp nhận chỉ thấy phiếu của mình; Quản lý trung tâm thấy phiếu của cả trung tâm và lọc được theo nhân viên (BR-17).
 3. Hệ thống hiển thị mã phiếu, thời gian tạo, khách hàng, thiết bị và trạng thái hạn cam kết.
 4. Người dùng chọn in danh sách bàn giao hoặc xuất Excel.
 5. Hệ thống tạo bản in hoặc file, SĐT hiển thị theo quyền của người dùng (NFR2).
@@ -506,10 +520,10 @@ Luồng ngoại lệ
 
 | Mã | Loại | Yêu cầu | Cách đo |
 | :--- | :--- | :--- | :--- |
-| NFR1 | Hiệu năng | Tra cứu khách theo số điện thoại trả kết quả trong dưới 2,0 giây (phân vị 95) với 65.000 hồ sơ khách, tương ứng quy mô hiện tại, trên phần cứng tối thiểu RAM 8 GB. | Kiểm thử tải |
-| NFR2 | Bảo mật | SĐT khách hiển thị ở dạng che 4 chữ số giữa (ví dụ `090****567`) trên mọi màn hình, bản in và file xuất. Chỉ Quản lý trung tâm xem được đầy đủ. Ô nhập do người dùng tự gõ không bị che. | Rà soát màn hình, bản in, file xuất bằng tài khoản từng vai trò |
-| NFR3 | Dễ sử dụng | Nhân viên tiếp nhận mới, sau 15 phút hướng dẫn, tự lập một phiếu chuẩn trong dưới 3,0 phút mà không cần hỗ trợ. | Ít nhất 5 nhân viên thử; đạt khi từ 80% trở lên hoàn thành |
-| NFR4 | Tin cậy | Lưu phiếu (kèm khách và thiết bị mới nếu có) thành công toàn bộ hoặc không lưu gì. Khi mất kết nối, form giữ lại dữ liệu đã nhập. Gửi lại cùng một yêu cầu lưu từ hai lần trở lên chỉ tạo đúng một phiếu. | Ngắt mạng giữa lúc lưu rồi gửi lại |
+| NFR1 | Hiệu năng | Tra cứu khách theo số điện thoại trả kết quả dưới **2,0 giây ở phân vị 95** và không quá **4,0 giây** ở trường hợp chậm nhất; lưu phiếu (kèm khách và thiết bị mới nếu có) dưới **3,0 giây ở phân vị 95**. | Kiểm thử tải ở quy mô hiện tại: **65.000 hồ sơ khách**, **12 nhân viên tiếp nhận thao tác đồng thời**, tối thiểu **1.000 lượt tra cứu** và **200 lượt lưu phiếu**; đo phân vị 95 trên phần cứng tối thiểu RAM 8 GB. |
+| NFR2 | Bảo mật | SĐT khách hiển thị ở dạng che 4 chữ số giữa (ví dụ `090****567`) trên mọi màn hình, bản in và file xuất. Theo QT-15, chỉ **Quản lý và Ban giám đốc** xem được đầy đủ; L2 không có màn hình riêng cho Ban giám đốc. Ô nhập do người dùng tự gõ không bị che. | **3 vai trò × 4 màn hình chính** (tra cứu khách, lập phiếu, bảng theo dõi hạn cam kết, danh sách trong ngày) + **1 bản in** + **1 file xuất** = **14 lượt kiểm tra** trên dữ liệu 65.000 hồ sơ khách. Đạt khi **0/14** lượt lộ SĐT đầy đủ ngoài vai trò Quản lý, và **4/4** màn hình của Quản lý hiển thị đầy đủ. |
+| NFR3 | Dễ sử dụng | Nhân viên tiếp nhận mới, sau **15 phút** hướng dẫn, tự lập một phiếu chuẩn trong **dưới 3,0 phút** mà không cần hỗ trợ; thao tác bàn giao cuối ngày (in hoặc xuất danh sách) trong **dưới 2 phút**, thay cho **40 phút** chép Excel hiện tại (Mục 6.1 bước 13). | **5 nhân viên mới**, mỗi người lập **3 phiếu liên tiếp**; đạt khi **≥ 80% (4/5)** có phiếu thứ ba dưới 3,0 phút và **0 lỗi** ở các trường bắt buộc; đo riêng thời gian bàn giao cuối ngày. |
+| NFR4 | Tin cậy | Lưu phiếu (kèm khách và thiết bị mới nếu có) thành công toàn bộ hoặc không lưu gì. Khi mất kết nối, form giữ lại dữ liệu đã nhập. Gửi lại cùng một yêu cầu lưu từ hai lần trở lên chỉ tạo đúng một phiếu. | Ngắt mạng tại **3 thời điểm** (trước khi gửi · trong khi gửi · sau khi máy chủ xử lý nhưng chưa phản hồi) × **3 lần gửi lại** = **9 lượt**; đạt khi **100%** lượt giữ nguyên dữ liệu đã nhập và mỗi lượt chỉ tạo đúng **1 phiếu**. |
 
 ---
 
@@ -523,8 +537,8 @@ Test case được viết ở BT3, mỗi tiêu chí chấp nhận tương ứng 
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | FR1 | Tra cứu khách qua SĐT đã chuẩn hóa, hiển thị lịch sử thiết bị | US1 | AC1.1-AC1.4 | UC1 | BR-01, BR-02 | MUST |
 | FR2 | Tạo hồ sơ khách khi SĐT chưa tồn tại | US2 | AC2.1-AC2.3 | UC3 | BR-01 | MUST |
-| FR3 | Đăng ký thiết bị cho khách, gồm thiết bị mua ngoài | US3 | AC3.1-AC3.5 | UC2 (bước 4) | BR-03, BR-04, BR-05, BR-06 | MUST |
-| FR4 | Lập phiếu mới ở trạng thái MỚI với mã duy nhất | US4 | AC4.1-AC4.4 | UC2 | BR-07, BR-08, BR-09 | MUST |
+| FR3 | Đăng ký thiết bị cho khách, gồm thiết bị mua ngoài | US3 | AC3.1-AC3.6 | UC2 (bước 4) | BR-03, BR-04, BR-05, BR-06 | MUST |
+| FR4 | Lập phiếu mới ở trạng thái MỚI với mã duy nhất | US4 | AC4.1-AC4.5 | UC2 | BR-07, BR-08, BR-09 | MUST |
 | FR5 | Gắn một hoặc nhiều nhóm sự cố, tạo nhóm mới | US5 | AC5.1-AC5.4 | UC4 (bước 6 của UC2) | BR-15 | MUST |
 | FR6 | Tự tính hạn cam kết theo mức ưu tiên và lịch làm việc | US6 | AC6.1-AC6.4 | UC2 (bước 8) | BR-09, BR-10 | MUST |
 | FR7 | Hiển thị hạn cam kết bằng mã màu, cảnh báo phiếu quá hạn | US7 | AC7.1-AC7.5 | UC6 | BR-11, BR-17 | MUST |
@@ -539,8 +553,28 @@ BR-16 (xóa mềm) áp dụng chung cho mọi FR có lưu hoặc ẩn dữ liệ
 
 | Mã NFR | Ảnh hưởng tới | Test case (viết ở BT3) |
 | :--- | :--- | :--- |
-| NFR1 | FR1 | TC-N1: đo thời gian tra cứu ở phân vị 95 với 65.000 bản ghi |
-| NFR2 | FR1, FR8 | TC-N2: kiểm tra SĐT che trên giao diện, bản in và file xuất theo từng vai trò |
-| NFR3 | FR4 | TC-N3: thử nghiệm với ít nhất 5 nhân viên mới |
-| NFR4 | FR4 | TC-N4: mất kết nối khi lưu rồi gửi lại, kiểm tra chỉ có một phiếu |
+| NFR1 | FR1, FR4 | TC-N1: kiểm thử tải 65.000 hồ sơ với 12 nhân viên đồng thời, ≥1.000 lượt tra cứu và ≥200 lượt lưu phiếu; đo phân vị 95 (≤2,0 s tra cứu, ≤3,0 s lưu) |
+| NFR2 | FR1, FR4, FR7, FR8 | TC-N2: 14 lượt kiểm tra (3 vai trò × 4 màn hình + 1 bản in + 1 file xuất); đạt khi 0 lượt lộ SĐT đầy đủ ngoài vai trò Quản lý |
+| NFR3 | FR4, FR8 | TC-N3: 5 nhân viên mới × 3 phiếu; đạt khi ≥80% có phiếu thứ ba ≤3,0 phút và 0 lỗi trường bắt buộc; đo thao tác bàn giao cuối ngày ≤2 phút |
+| NFR4 | FR4 | TC-N4: 3 thời điểm ngắt mạng × 3 lần gửi lại = 9 lượt; đạt khi 100% giữ nguyên dữ liệu và đúng 1 phiếu mỗi lượt |
+
+### 6.3. Đối chiếu quy tắc case study với quy tắc SRS
+
+| Quy tắc case study | Thuộc L2 | Thể hiện ở SRS |
+| :--- | :--- | :--- |
+| QT-01 | có | BR-01 |
+| QT-02 | có | BR-02 |
+| QT-03 | có | BR-03, BR-05 |
+| QT-04 | có | BR-09, BR-10 |
+| QT-05 | có (chỉ L2) | BR-12, BR-13, BR-14 |
+| QT-06 | có | BR-07 |
+| QT-07, QT-08 | không (L4) | không áp dụng |
+| QT-09 | không (L5) | không áp dụng |
+| QT-10 | không (L8) | không áp dụng |
+| QT-11, QT-12 | không (L9) | không áp dụng |
+| QT-13 | có | BR-16 |
+| QT-14 | có | BR-17 |
+| QT-15 | có | NFR2 |
+
+Quy tắc không lấy từ Mục 9, là quyết định của SRS và cần lý do: BR-06 (một phiếu mở cho mỗi thiết bị), BR-11 (mã màu và ngưỡng 25%), BR-15 (phần cho nhân viên tự thêm nhóm, cắt khoảng trắng, so khớp không phân biệt hoa thường, tối đa 5 nhóm), BR-08 (phần cấp lại số theo năm và không sửa được), BR-04 (phần bắt buộc ghi chú nguồn gốc).
 
