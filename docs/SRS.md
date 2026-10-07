@@ -110,8 +110,8 @@ Ví dụ cho BR-09 và BR-10:
 | US4 | Nhân viên tiếp nhận | Lập phiếu bảo hành mới | MUST |
 | US5 | Nhân viên tiếp nhận | Gắn nhóm sự cố cho phiếu | MUST |
 | US6 | Nhân viên tiếp nhận | Tự động tính hạn cam kết | MUST |
-| US7 | Quản lý, Kỹ thuật viên | Bảng theo dõi hạn cam kết của phiếu | MUST |
-| US8 | Nhân viên tiếp nhận, Quản lý | Xem và xuất danh sách phiếu tiếp nhận trong ngày | MUST |
+| US7 | Quản lý trung tâm | Bảng theo dõi hạn cam kết của phiếu | MUST |
+| US8 | Nhân viên tiếp nhận, Quản lý trung tâm | Xem và xuất danh sách phiếu tiếp nhận trong ngày | MUST |
 | US9 | Nhân viên tiếp nhận | Tự xác định bảo hành miễn phí hay sửa chữa tính phí | SHOULD |
 | US10 | Quản lý trung tâm | Duyệt hoặc từ chối bảo hành miễn phí | SHOULD |
 | US11 | Nhân viên tiếp nhận | Cảnh báo thiết bị bảo hành nhiều lần cùng một lỗi | COULD |
@@ -279,7 +279,7 @@ Bảng liệt kê các phiếu chưa đóng của trung tâm, xếp Đỏ trư�
 
 #### US8 [MUST] Xem và xuất danh sách phiếu tiếp nhận trong ngày
 
-Là nhân viên tiếp nhận, tôi muốn xem và in danh sách phiếu do mình lập trong ngày để rà soát thông tin và bàn giao cho Quản lý trung tâm. Quản lý xem được danh sách của cả trung tâm.
+Là nhân viên tiếp nhận, tôi muốn xem và in danh sách phiếu do mình lập trong ngày để rà soát thông tin và bàn giao cho Quản lý trung tâm.
 
 "Trong ngày" là từ 00:00 đến 23:59 của ngày hiện tại theo giờ Việt Nam.
 
@@ -295,7 +295,7 @@ Là nhân viên tiếp nhận, tôi muốn xem và in danh sách phiếu do mìn
   - Given: danh sách trong ngày đang hiển thị.
   - When: nhân viên chọn in danh sách bàn giao hoặc xuất Excel.
   - Then: bản in hoặc file có đủ các cột của bảng và SĐT khách ở dạng che (NFR2).
-- AC8.4 Góc nhìn Quản lý
+- AC8.4 Góc nhìn Quản lý trung tâm
   - Given: Quản lý mở danh sách trong ngày.
   - When: danh sách hiển thị.
   - Then: Quản lý thấy phiếu của cả trung tâm và lọc được theo nhân viên (BR-17).
