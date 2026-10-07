@@ -1,7 +1,7 @@
 # Hợp đồng API (API contract) - Track SE - Luồng L2
 
 - Dự án: Hệ thống Smart CRM - Mekong Mobile. Luồng: **L2 - Tiếp nhận và phân loại yêu cầu bảo hành**
-- Tài liệu tham chiếu: `SRS.md` (bản đang nộp) và case study Mục 8 (từ điển dữ liệu), Mục 9 (quy tắc nghiệp vụ)
+- Tài liệu tham chiếu: pSRS.mdp (bản đang nộp) và case study Mục 8 (từ điển dữ liệu), Mục 9 (quy tắc nghiệp vụ)
 - Nguyên tắc: **mọi endpoint phải truy vết được về ít nhất một User Story** trong bảng truy vết ở mục 6 của SRS. Endpoint nào không nối được thì bỏ.
 - Quy ước đặt tên trường: `snake_case`, khớp đúng tên cột trong mô hình dữ liệu Mục 8, trừ hai bổ sung của SRS đã ghi ở mục 1.4 của SRS là `is_verified` và bảng nối `ticket_issue`.
 
@@ -224,7 +224,7 @@ Tên nhóm được cắt khoảng trắng đầu cuối trước khi lưu (BR-1
 
 ### 4.7. POST /api/tickets - lập phiếu bảo hành (US1, US3, US4, US5, US6)
 
-**HEADERS:** `Idempotency-Key: 7f3c…` (bắt buộc, NFR4)
+**HEADERS:** `Idempotency-Key: 7f3c1a9e-0b2d-4c7a-9f31-2e5c8d4a6b70` (bắt buộc, NFR4)
 
 **REQUEST BODY**
 
@@ -305,7 +305,7 @@ Diễn giải các trường do hệ thống sinh:
 | :--- | :--- | :--- |
 | `center_id` | Trung tâm cần xem | Bắt buộc; khác trung tâm trong token thì 403 (BR-17) |
 | `date` | Chỉ lấy phiếu tạo trong ngày | Định dạng `YYYY-MM-DD`, hiểu theo giờ Việt Nam (BR-18) |
-| `status` | Lọc theo trạng thái | `MOI`, `DA_PHAN_CONG`, … |
+| `status` | Lọc theo trạng thái | `MOI`, `DA_PHAN_CONG`, v.v. |
 | `created_by` | Lọc theo nhân viên tiếp nhận | Chỉ Quản lý trung tâm dùng được (BR-17) |
 | `verified` | `false` để lấy danh sách chờ xác minh | Dùng cho màn hình của Quản lý trung tâm |
 | `exclude_completed` | `true` để loại phiếu đã Hoàn tất | Bảng theo dõi mặc định `true` (BR-11) |
@@ -391,7 +391,7 @@ Quyết định được lưu **trên phiếu** (`decided_by`, `decided_at`, `de
 { "device_id": 3311, "category_id": 1, "previous_count": 2, "tickets": ["BH-000042/2026", "BH-000117/2026"] }
 ```
 
-`previous_count` ≥ 2 nghĩa là phiếu đang lập sẽ là lần thứ 3 trở đi thì hiển thị cảnh báo (BR-15).
+`previous_count` từ 2 trở lên nghĩa là phiếu đang lập sẽ là lần thứ 3 trở đi thì hiển thị cảnh báo (BR-15).
 
 **RESPONSE 404 Not Found** - `device_id` không tồn tại.
 **RESPONSE 503 Service Unavailable** - không tải được lịch sử; giao diện bỏ qua cảnh báo và cho tiếp tục lập phiếu (AC11.3).
@@ -402,7 +402,7 @@ Quyết định được lưu **trên phiếu** (`decided_by`, `decided_at`, `de
 
 | Trường | Endpoint | Bắt buộc | Kiểu / ràng buộc | Thông báo lỗi khi vi phạm |
 | :--- | :--- | :--- | :--- | :--- |
-| `phone` | 1, 2 | Có | Chuẩn hoá về 10 chữ số bắt đầu bằng `0`; nhận `+84…`, `84…`, có dấu cách hoặc dấu chấm (QT-02) | Số điện thoại phải gồm đúng 10 chữ số (dạng 0xxxxxxxxx) |
+| `phone` | 1, 2 | Có | Chuẩn hoá về 10 chữ số bắt đầu bằng `0`; nhận dạng có tiền tố +84 hoặc 84, có dấu cách hoặc dấu chấm (QT-02) | Số điện thoại phải gồm đúng 10 chữ số (dạng 0xxxxxxxxx) |
 | `full_name` | 2 | Có | Chuỗi, 1-120 ký tự | Vui lòng nhập Họ tên khách hàng |
 | `address` | 2 | Không | Chuỗi, tối đa 255 ký tự | không có |
 | `customer_id` | 3, 4, 7 | Có | Số nguyên dương, phải tồn tại | Không tìm thấy khách hàng |
@@ -446,7 +446,7 @@ Quyết định được lưu **trên phiếu** (`decided_by`, `decided_at`, `de
 
 ---
 
-## 7. Truy vết quy tắc nghiệp vụ ↔ hợp đồng
+## 7. Truy vết quy tắc nghiệp vụ trong hợp đồng
 
 | Quy tắc | Thể hiện ở đâu trong hợp đồng |
 | :--- | :--- |
