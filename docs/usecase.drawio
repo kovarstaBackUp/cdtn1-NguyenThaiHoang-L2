@@ -1,0 +1,78 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Use Case L2" id="uL0SYljyxBgl9KCMQS6I">
+    <mxGraphModel dx="-1153" dy="-4322" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontSize=13;fontStyle=1;fillColor=none;strokeColor=#333333;dashed=0;" value="HỆ THỐNG: Tiếp nhận và phân loại yêu cầu bảo hành (luồng L2)" vertex="1">
+          <mxGeometry height="510" width="600" x="3994.5662650602417" y="6100.036144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-24" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="oe4ED2A-qpQszDIk4_pc-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-25" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="oe4ED2A-qpQszDIk4_pc-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-26" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="oe4ED2A-qpQszDIk4_pc-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-27" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="oe4ED2A-qpQszDIk4_pc-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-28" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="oe4ED2A-qpQszDIk4_pc-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=12;" value="Nhân viên tiếp nhận" vertex="1">
+          <mxGeometry height="70" width="40" x="3909.9962650602415" y="6259.996144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-21" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="oe4ED2A-qpQszDIk4_pc-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-3" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontSize=12;" value="Quản lý trung tâm" vertex="1">
+          <mxGeometry height="70" width="40" x="4719.996265060242" y="6320.036144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC1. Tra cứu khách hàng theo số điện thoại" vertex="1">
+          <mxGeometry height="64" width="210" x="4044.5662650602417" y="6140.036144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC2. Tạo khách hàng mới" vertex="1">
+          <mxGeometry height="64" width="210" x="4339.996265060242" y="6256.036144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC3. Đăng ký thiết bị cho khách" vertex="1">
+          <mxGeometry height="64" width="210" x="4049.9962650602415" y="6509.996144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC5. Gắn nhóm sự cố cho phiếu" vertex="1">
+          <mxGeometry height="64" width="210" x="4219.996265060242" y="6425.996144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-22" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-8" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" target="oe4ED2A-qpQszDIk4_pc-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-23" connectable="0" parent="oe4ED2A-qpQszDIk4_pc-22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="include" vertex="1">
+          <mxGeometry relative="1" x="-0.1335" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-8" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC4. Lập phiếu bảo hành mới" vertex="1">
+          <mxGeometry height="64" width="210" x="4049.996265060242" y="6309.996144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-9" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;" value="UC6. Duyệt hình thức bảo hành" vertex="1">
+          <mxGeometry height="64" width="210" x="4344.566265060242" y="6140.036144578313" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-10" parent="1" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fillColor=none;strokeColor=none;" value="CHÚ THÍCH&lt;br&gt;Hình chữ nhật nét liền: ranh giới hệ thống.&lt;br&gt;Hình elip: use case, tên bắt đầu bằng động từ.&lt;br&gt;Hình người: tác nhân, đặt ngoài ranh giới.&lt;br&gt;Mũi tên nét đứt ghi include: use case được gọi vào như một bước bắt buộc.&lt;br&gt;Mũi tên nét đứt ghi extend: use case mở rộng ở một điểm mở rộng." vertex="1">
+          <mxGeometry height="160" width="500" x="4050" y="6620" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-17" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-8" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#333333;fontSize=10;endFill=0;" target="oe4ED2A-qpQszDIk4_pc-4" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-18" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-8" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#333333;fontSize=10;endFill=0;" target="oe4ED2A-qpQszDIk4_pc-6" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-19" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-8" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#333333;fontSize=10;endFill=0;" target="oe4ED2A-qpQszDIk4_pc-7" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="oe4ED2A-qpQszDIk4_pc-20" edge="1" parent="1" source="oe4ED2A-qpQszDIk4_pc-5" style="endArrow=open;html=1;rounded=0;dashed=1;strokeColor=#333333;fontSize=10;endFill=0;" target="oe4ED2A-qpQszDIk4_pc-4" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
