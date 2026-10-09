@@ -1,77 +1,77 @@
 # Hợp đồng API (API contract) - Track SE - Luồng L2
 
-- Dự án: Hệ thống Smart CRM - Mekong Mobile. Luồng: **L2 - Tiếp nhận và phân loại yêu cầu bảo hành**
-- Tài liệu tham chiếu: pSRS.mdp (bản đang nộp) và case study Mục 8 (từ điển dữ liệu), Mục 9 (quy tắc nghiệp vụ)
-- Nguyên tắc: **mọi endpoint phải truy vết được về ít nhất một User Story** trong bảng truy vết ở mục 6 của SRS. Endpoint nào không nối được thì bỏ.
-- Quy ước đặt tên trường: `snake_case`, khớp đúng tên cột trong mô hình dữ liệu Mục 8, trừ hai bổ sung của SRS đã ghi ở mục 1.4 của SRS là `is_verified` và bảng nối `ticket_issue`.
+- Dự án: Hệ thống Smart CRM - Mekong Mobile
+- Phạm vi: Luồng L2 - Tiếp nhận và phân loại yêu cầu bảo hành
+- Chuẩn tham chiếu: REST trên HTTP, JSON
+- Tác giả: Nguyễn Thái Hoàng
+
 
 ---
 
 ## 1. Danh sách endpoint
 
-| # | Phương thức | Đường dẫn | Mục đích | User Story | MoSCoW |
+| # | Method | Path | Use case | User story | Yêu cầu chức năng |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | GET | `/api/customers?phone={phone}` | Tra cứu khách hàng theo số điện thoại | US1 | MUST |
-| 2 | POST | `/api/customers` | Tạo khách hàng mới khi chưa tồn tại | US2 | MUST |
-| 3 | GET | `/api/customers/{customer_id}/devices` | Lấy danh sách thiết bị khách đã mua | US1, US3 | MUST |
-| 4 | POST | `/api/devices` | Đăng ký thiết bị cho khách (kể cả thiết bị không có hồ sơ mua) | US3 | MUST |
-| 5 | GET | `/api/issue-categories` | Lấy danh mục nhóm sự cố dùng chung | US5 | MUST |
-| 6 | POST | `/api/issue-categories` | Thêm nhóm sự cố mới vào danh mục | US5 | MUST |
-| 7 | POST | `/api/tickets` | Lập phiếu bảo hành: sinh mã, tính hạn cam kết, xác định hình thức bảo hành | US1, US3, US4, US5, US6 | MUST |
-| 8 | GET | `/api/tickets` | Bảng theo dõi hạn cam kết và danh sách phiếu trong ngày | US7, US8 | MUST |
-| 9 | PATCH | `/api/tickets/{ticket_id}/warranty-decision` | Quản lý trung tâm duyệt hoặc từ chối bảo hành miễn phí | US9, US10 | SHOULD |
-| 10 | GET | `/api/devices/{device_id}/ticket-history` | Lịch sử phiếu của thiết bị theo nhóm sự cố, phục vụ cảnh báo lỗi lặp lại | US11 | COULD |
+| 1 | GET | `/api/customers` | UC1 | US1 | FR1 |
+| 2 | POST | `/api/customers` | UC2 | US2 | FR2 |
+| 3 | POST | `/api/devices` | UC3 | US3 | FR3 |
+| 4 | GET | `/api/issue-categories` | UC5 | US5 | FR6 |
+| 5 | POST | `/api/tickets` | UC4 | US4 | FR4, FR5, FR6 |
+| 6 | GET | `/api/tickets` | UC6 | US6 | FR7 |
+| 7 | PATCH | `/api/tickets/{ticket_id}/warranty-decision` | UC6 | US6 | FR7 |
 
-Không có endpoint `DELETE` nào: QT-13 cấm xóa vật lý, và L2 không có thao tác xóa hay đánh dấu ẩn (BR-16).
+Bảy endpoint cho bảy yêu cầu chức năng. Không có endpoint tạo hoặc sửa nhóm sự cố, vì mục 1.3 của SRS đặt việc đó ra ngoài phạm vi: danh mục nhóm sự cố là dữ liệu cài sẵn.
 
 ---
 
 ## 2. Quy ước chung
 
 - **Định dạng trao đổi:** JSON, mã hoá UTF-8. Header bắt buộc khi có body: `Content-Type: application/json`.
-- **Tên trường:** `snake_case`, khớp tên cột ở Mục 8 của case study.
-- **Thời gian:** ISO 8601 kèm múi giờ Việt Nam, ví dụ `2026-09-08T14:30:00+07:00`. Mọi mốc thời gian trong L2 hiểu theo giờ Việt Nam (BR-18).
-- **Tiền tệ:** số nguyên VND, không phần thập phân, không dấu phân cách.
-- **Phân trang:** tham số `page` (bắt đầu từ 1) và `size` (mặc định 20, tối đa 100). Response kèm `total`.
+- **Tên trường:** `snake_case`, khớp đúng tên cột trong `erd.dbml`.
+- **Thời gian:** ISO 8601 kèm múi giờ Việt Nam, ví dụ `2026-09-08T14:30:00+07:00`. Mọi mốc thời gian trong L2 hiểu theo giờ Việt Nam.
+- **Phân trang:** tham số `page` bắt đầu từ 1 và `size` mặc định 20, tối đa 100. Response kèm `total`.
 - **Mọi lỗi trả về cùng một cấu trúc:**
 
 ```json
 { "error": { "code": "MA_LOI", "message": "Thông báo cho người dùng", "fields": { "ten_truong": "chi tiết" } } }
 ```
 
-- **Chống tạo trùng khi thử lại (NFR4):** `POST /api/tickets` bắt buộc có header `Idempotency-Key` (UUID do client sinh). Gửi lại cùng khoá trả về đúng phiếu đã tạo, **không** tạo phiếu thứ hai và **không** sinh mã phiếu thứ hai.
 - **Che số điện thoại (NFR2, QT-15):** mọi response trả `phone_masked` dạng `090****567`. Trường `phone` đầy đủ **chỉ** xuất hiện khi người gọi là **Quản lý trung tâm**; các vai trò khác không nhận trường này.
+- **Chống tạo trùng khi thử lại (NFR4):** hợp đồng không dùng khoá chống trùng. Gửi lại cùng một yêu cầu lưu sẽ tìm thấy khách theo BR-01 và thiết bị theo BR-03, rồi gặp BR-06 nên nhận `409 DEVICE_HAS_OPEN_TICKET` kèm mã phiếu đã tạo. Kết quả là **không bao giờ có phiếu thứ hai**, và hợp đồng không cần thêm header hay cột nào.
+- **Hai nhóm theo hạn (BR-20):** endpoint 6 trả danh sách đã sắp xếp sẵn, phiếu đã qua hạn lên trước rồi mới tới phiếu chưa qua hạn, mỗi nhóm xếp theo `due_date` tăng dần. Thứ tự này là một phần của hợp đồng, client không phải sắp lại.
+- **Không dùng mã 422.** L2 không tự xác định điều kiện bảo hành: mọi phiếu đều được lập và đều chờ Quản lý trung tâm duyệt, nên hết hạn bảo hành không phải lỗi.
 
 ---
 
 ## 3. Xác thực và phân quyền
 
-Cơ chế: `Authorization: Bearer <JWT>`. Token mang `employee_id`, `role` và `center_id`.
+Cơ chế: `Authorization: Bearer <token>`. Token mang `employee_id`, `role` và `center_code`.
 
-| Endpoint | Nhân viên tiếp nhận | Quản lý trung tâm | Kỹ thuật viên |
-| :--- | :--- | :--- | :--- |
-| 1 GET /api/customers | 200 OK | 200 OK | 403 Forbidden |
-| 2 POST /api/customers | 201 Created | 403 Forbidden | 403 Forbidden |
-| 3 GET /api/customers/{id}/devices | 200 OK | 200 OK | 403 Forbidden |
-| 4 POST /api/devices | 201 Created | 403 Forbidden | 403 Forbidden |
-| 5 GET /api/issue-categories | 200 OK | 200 OK | 200 OK |
-| 6 POST /api/issue-categories | 201 Created | 201 Created | 403 Forbidden |
-| 7 POST /api/tickets | 201 Created | 403 Forbidden | 403 Forbidden |
-| 8 GET /api/tickets | 200 OK (chỉ phiếu của mình) | 200 OK (cả trung tâm, lọc theo nhân viên) | 200 OK (chỉ đọc, cả trung tâm) |
-| 9 PATCH warranty-decision | 403 Forbidden | 200 OK | 403 Forbidden |
-| 10 GET ticket-history | 200 OK | 200 OK | 200 OK |
+Đăng nhập là hạ tầng, không phải nghiệp vụ của L2, đúng như case study Mục 10 xếp ví dụ "viết API đăng nhập" vào nhóm phạm vi quá hẹp. Vì vậy token do hệ thống đăng nhập cấp, không có endpoint đăng nhập trong hợp đồng này, và không có bảng người dùng nào phục vụ việc cấp token.
 
-Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung tâm trong token trả **403**. Hồ sơ khách hàng và thiết bị dùng chung toàn công ty nên endpoint 1, 2, 3, 4 không giới hạn theo trung tâm.
+Hai vai trò hoạt động trong L2, phân quyền theo endpoint:
+
+| Endpoint | Nhân viên tiếp nhận | Quản lý trung tâm |
+| :--- | :--- | :--- |
+| 1 GET `/api/customers` | 200 OK | 200 OK |
+| 2 POST `/api/customers` | 201 Created | 403 Forbidden |
+| 3 POST `/api/devices` | 201 Created | 403 Forbidden |
+| 4 GET `/api/issue-categories` | 200 OK | 200 OK |
+| 5 POST `/api/tickets` | 201 Created | 403 Forbidden |
+| 6 GET `/api/tickets` | 403 Forbidden | 200 OK |
+| 7 PATCH warranty-decision | 403 Forbidden | 200 OK |
+
+Phạm vi dữ liệu theo BR-17 và QT-14: hồ sơ khách hàng và thiết bị dùng chung toàn công ty nên endpoint 1 và 3 không giới hạn theo trung tâm. Riêng phiếu thì theo trung tâm: endpoint 6 chỉ trả phiếu có `center_code` trùng trung tâm trong token, và endpoint 7 trả **403** nếu phiếu không thuộc trung tâm của người gọi.
 
 ---
 
 ## 4. Chi tiết từng endpoint
 
-### 4.1. GET /api/customers - tra cứu khách theo SĐT (US1)
+### 4.1. GET /api/customers - tra cứu khách theo số điện thoại (UC1, US1, FR1)
 
-**Query:** `phone` (bắt buộc). Server chuẩn hoá trước khi kiểm tra (BR-02, QT-02): nhận `0901234567`, `+84901234567`, `84901234567`, `090 123 4567`, `090.123.4567`.
+**QUERY:** `phone` (bắt buộc). Nhận cả dạng chưa chuẩn hóa; hệ thống chuẩn hóa theo BR-02 trước khi tra.
 
-**RESPONSE 200 OK** (người gọi là Nhân viên tiếp nhận)
+**RESPONSE 200 OK** - phục vụ AC1.1
 
 ```json
 {
@@ -79,18 +79,16 @@ Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung t
   "full_name": "Nguyễn Văn A",
   "phone_masked": "090****567",
   "address": "12 Lê Lợi, Quận 10, TP.HCM",
-  "segment": "THUONG_XUYEN",
-  "created_at": "2026-09-08T14:30:00+07:00"
+  "devices": [
+    { "device_id": 3311, "serial_no": "SN-PHONE-123", "is_external": false, "purchase_date": "2025-11-20", "warranty_months": 12 },
+    { "device_id": 3312, "serial_no": "SN-PHONE-124", "is_external": true, "purchase_date": null, "warranty_months": 12 }
+  ]
 }
 ```
 
-**RESPONSE 200 OK** (người gọi là Quản lý trung tâm - có thêm `phone` đầy đủ, NFR2)
+Danh sách thiết bị trả kèm trong cùng response để màn hình tra cứu hiển thị được ngay, không cần gọi thêm endpoint. Khi người gọi là Quản lý trung tâm, response có thêm trường `phone` đầy đủ theo NFR2.
 
-```json
-{ "customer_id": 1024, "full_name": "Nguyễn Văn A", "phone": "0901234567", "phone_masked": "090****567" }
-```
-
-**RESPONSE 400 Bad Request** - sai định dạng sau chuẩn hoá (AC1.3)
+**RESPONSE 400 Bad Request** - sai định dạng sau chuẩn hóa (AC1.3)
 
 ```json
 { "error": { "code": "INVALID_PHONE", "message": "Số điện thoại phải gồm đúng 10 chữ số (dạng 0xxxxxxxxx)", "fields": { "phone": "090123" } } }
@@ -104,7 +102,7 @@ Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung t
 
 **RESPONSE 401 Unauthorized** - thiếu hoặc hết hạn token.
 
-### 4.2. POST /api/customers - tạo khách hàng mới (US2)
+### 4.2. POST /api/customers - tạo khách hàng mới (UC2, US2, FR2)
 
 **REQUEST BODY**
 
@@ -112,13 +110,11 @@ Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung t
 { "phone": "0988777666", "full_name": "Nguyễn Văn A", "address": "12 Lê Lợi, Quận 10, TP.HCM" }
 ```
 
-**RESPONSE 201 Created**
+**RESPONSE 201 Created** - phục vụ AC2.1
 
 ```json
-{ "customer_id": 1025, "full_name": "Nguyễn Văn A", "phone_masked": "098****666", "segment": null, "created_at": "2026-09-08T14:31:00+07:00" }
+{ "customer_id": 1025, "full_name": "Nguyễn Văn A", "phone_masked": "098****666" }
 ```
-
-`segment` luôn là `null` với khách tạo ở L2: L2 không tạo và không sửa phân khúc.
 
 **RESPONSE 400 Bad Request** - thiếu họ tên (AC2.3)
 
@@ -126,7 +122,7 @@ Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung t
 { "error": { "code": "VALIDATION_FAILED", "message": "Vui lòng nhập Họ tên khách hàng", "fields": { "full_name": "Trường bắt buộc" } } }
 ```
 
-**RESPONSE 409 Conflict** - trùng SĐT khi lưu đồng thời (AC2.2, BR-01, QT-01)
+**RESPONSE 409 Conflict** - trùng số điện thoại khi lưu đồng thời (AC2.2, BR-01, QT-01)
 
 ```json
 { "error": { "code": "CUSTOMER_EXISTS", "message": "Số điện thoại đã tồn tại trên hệ thống", "fields": { "existing_customer_id": 1025 } } }
@@ -134,52 +130,49 @@ Phạm vi dữ liệu theo BR-17 và QT-14: yêu cầu `center_id` khác trung t
 
 Client dùng `existing_customer_id` để nạp hồ sơ đã có thay vì tạo mới.
 
-### 4.3. GET /api/customers/{customer_id}/devices - thiết bị đã mua (US1, US3)
+**RESPONSE 403 Forbidden** - vai trò Quản lý trung tâm gọi endpoint này.
 
-**RESPONSE 200 OK** - phục vụ AC1.1 (hiển thị danh sách thiết bị) và AC3.1 (chọn thiết bị thì tự điền serial, ngày mua, số tháng bảo hành)
+### 4.3. POST /api/devices - đăng ký thiết bị (UC3, US3, FR3)
+
+**REQUEST BODY** - thiết bị mua ngoài, khách có xuất trình hóa đơn
 
 ```json
 {
-  "total": 2,
-  "items": [
-    { "device_id": 3311, "serial_no": "SN-PHONE-123", "product_name": "Samsung Galaxy A15", "purchase_date": "2025-11-20", "warranty_months": 12 },
-    { "device_id": 3312, "serial_no": "SN-PHONE-124", "product_name": "Oppo Reno 11", "purchase_date": null, "warranty_months": 12 }
-  ]
+  "customer_id": 1024,
+  "serial_no": "SN-EXT-999",
+  "is_external": true,
+  "origin_note": "mua tại CellphoneS",
+  "purchase_date": "2026-02-10",
+  "warranty_months": 12
 }
 ```
 
+`purchase_date` chỉ gửi khi khách có hóa đơn, thiếu thì để `null` theo BR-04. Nơi mua ghi trong `origin_note` vì đó là văn bản tự do. `warranty_months` để trống thì hệ thống dùng 12.
+
+**RESPONSE 201 Created** - phục vụ AC3.1 và AC3.2
+
+```json
+{ "device_id": 3313, "serial_no": "SN-EXT-999", "is_external": true, "purchase_date": "2026-02-10", "warranty_months": 12 }
+```
+
+**RESPONSE 400 Bad Request** - thiếu serial hoặc thiếu ghi chú nguồn gốc (AC3.3)
+
+```json
+{ "error": { "code": "VALIDATION_FAILED", "message": "Thiết bị mua ngoài phải có ghi chú nguồn gốc", "fields": { "origin_note": "Trường bắt buộc" } } }
+```
+
+Khi thiếu serial thì cùng mã lỗi này với thông báo "Số serial/IMEI là trường bắt buộc".
+
 **RESPONSE 404 Not Found** - `customer_id` không tồn tại.
-**RESPONSE 403 Forbidden** - vai trò Kỹ thuật viên gọi endpoint này.
-
-### 4.4. POST /api/devices - đăng ký thiết bị (US3)
-
-**REQUEST BODY**
+**RESPONSE 409 Conflict** - serial đang thuộc khách khác (BR-05)
 
 ```json
-{ "customer_id": 1024, "serial_no": "SN-EXT-999", "purchase_date": null, "purchase_place": "Mua tại cửa hàng khác", "warranty_months": 12 }
+{ "error": { "code": "SERIAL_OWNED_BY_OTHER", "message": "Serial/IMEI này đang thuộc một khách hàng khác. Vui lòng chuyển Quản lý trung tâm xử lý" } }
 ```
 
-`purchase_date` và `purchase_place` là đường nhập theo hoá đơn (BR-04): nếu khách xuất trình hoá đơn thì client gửi ngày mua và nơi mua, hệ thống xác định điều kiện bảo hành theo ngày đó thay vì gắn cờ chờ xác minh (AC3.6).
+**RESPONSE 403 Forbidden** - vai trò Quản lý trung tâm gọi endpoint này.
 
-**RESPONSE 201 Created**
-
-```json
-{ "device_id": 3390, "customer_id": 1024, "serial_no": "SN-EXT-999", "purchase_date": null, "warranty_months": 12 }
-```
-
-**RESPONSE 400 Bad Request** - thiếu serial (AC3.5)
-
-```json
-{ "error": { "code": "VALIDATION_FAILED", "message": "Số serial/IMEI là trường bắt buộc", "fields": { "serial_no": "Trường bắt buộc" } } }
-```
-
-**RESPONSE 409 Conflict** - serial đang thuộc khách khác (AC3.4, BR-05, QT-03)
-
-```json
-{ "error": { "code": "SERIAL_OWNED_BY_OTHER", "message": "Serial/IMEI đang thuộc khách hàng khác. Vui lòng chuyển Quản lý trung tâm xử lý." } }
-```
-
-### 4.5. GET /api/issue-categories - danh mục nhóm sự cố (US5)
+### 4.4. GET /api/issue-categories - danh mục nhóm sự cố (UC5, US5, FR6)
 
 **RESPONSE 200 OK**
 
@@ -187,44 +180,23 @@ Client dùng `existing_customer_id` để nạp hồ sơ đã có thay vì tạo
 {
   "total": 6,
   "items": [
-    { "category_id": 1, "category_name": "Màn hình", "default_priority": "CAO", "is_active": true },
-    { "category_id": 2, "category_name": "Pin", "default_priority": "TRUNG_BINH", "is_active": true },
-    { "category_id": 6, "category_name": "Khác", "default_priority": "THAP", "is_active": true }
+    { "category_id": 1, "category_name": "Màn hình", "default_priority": "CAO" },
+    { "category_id": 2, "category_name": "Pin", "default_priority": "TRUNG_BINH" },
+    { "category_id": 3, "category_name": "Sạc", "default_priority": "TRUNG_BINH" },
+    { "category_id": 4, "category_name": "Phần mềm", "default_priority": "THAP" },
+    { "category_id": 5, "category_name": "Nước vào", "default_priority": "CAO" },
+    { "category_id": 6, "category_name": "Khác", "default_priority": "THAP" }
   ]
 }
 ```
 
-Client dùng `default_priority` để điền sẵn mức ưu tiên khi nhân viên chọn nhóm (BR-15, AC5.1).
+Danh mục là dữ liệu cài sẵn theo BR-15. Client dùng `default_priority` để điền sẵn mức ưu tiên khi nhân viên chọn nhóm; nhân viên vẫn sửa được (BR-21, AC5.1). Nhóm "Khác" là đường thoát khi không nhóm nào phù hợp (AC5.2). Không có endpoint POST hay PATCH cho đường dẫn này.
 
-**RESPONSE 401 Unauthorized** - thiếu token.
-**RESPONSE 403 Forbidden** - vai trò không thuộc L2.
+**RESPONSE 401 Unauthorized** - thiếu hoặc hết hạn token.
 
-### 4.6. POST /api/issue-categories - thêm nhóm sự cố mới (US5)
+### 4.5. POST /api/tickets - lập phiếu bảo hành (UC4, US4, FR4, FR5, FR6)
 
-**REQUEST BODY**
-
-```json
-{ "category_name": "Vỡ kính", "default_priority": "TRUNG_BINH" }
-```
-
-**RESPONSE 201 Created**
-
-```json
-{ "category_id": 7, "category_name": "Vỡ kính", "default_priority": "TRUNG_BINH", "is_active": true }
-```
-
-Tên nhóm được cắt khoảng trắng đầu cuối trước khi lưu (BR-15).
-
-**RESPONSE 400 Bad Request** - tên rỗng sau khi cắt khoảng trắng.
-**RESPONSE 409 Conflict** - trùng tên không phân biệt hoa thường (BR-15)
-
-```json
-{ "error": { "code": "CATEGORY_EXISTS", "message": "Nhóm sự cố đã tồn tại trong danh mục", "fields": { "existing_category_id": 2 } } }
-```
-
-### 4.7. POST /api/tickets - lập phiếu bảo hành (US1, US3, US4, US5, US6)
-
-**HEADERS:** `Idempotency-Key: 7f3c1a9e-0b2d-4c7a-9f31-2e5c8d4a6b70` (bắt buộc, NFR4)
+**HEADERS:** `Authorization: Bearer <token>` (bắt buộc). Không có header chống trùng; cơ chế chống tạo trùng khi thử lại dựa vào BR-06, xem mục 2.
 
 **REQUEST BODY**
 
@@ -232,117 +204,124 @@ Tên nhóm được cắt khoảng trắng đầu cuối trước khi lưu (BR-1
 {
   "customer_id": 1024,
   "device_id": 3311,
-  "center_id": 2,
   "issue_desc": "Màn hình chớp tắt khi cắm sạc",
-  "category_ids": [1],
-  "priority": "CAO",
-  "accessories": ["SAC", "HOP"],
-  "cosmetic_condition": "Trầy nhẹ ở góc phải"
+  "category_id": 1,
+  "priority": "CAO"
 }
 ```
 
-**RESPONSE 201 Created**
+**RESPONSE 201 Created** - phục vụ AC4.1
 
 ```json
 {
   "ticket_id": 88231,
-  "ticket_code": "BH-000231/2026",
+  "ticket_code": "BH-000123/2026",
   "status": "MOI",
   "customer_id": 1024,
   "device_id": 3311,
-  "center_id": 2,
-  "category_ids": [1],
+  "center_code": "TT01",
+  "category_id": 1,
   "priority": "CAO",
+  "is_warranty": null,
+  "verified_by": null,
+  "verified_at": null,
+  "reject_reason": null,
   "received_at": "2026-09-08T14:30:00+07:00",
-  "due_date": "2026-09-09T14:30:00+07:00",
-  "is_verified": true,
-  "is_warranty": true,
-  "sla_percent_remaining": 100,
-  "sla_color": "XANH",
-  "repeat_fault_warning": null
+  "due_date": "2026-09-09T14:30:00+07:00"
 }
 ```
 
 Diễn giải các trường do hệ thống sinh:
 
 - `ticket_code`: 6 chữ số tăng dần, bắt đầu lại từ `000001` mỗi năm, không tái sử dụng (BR-08).
-- `received_at`: thời điểm hệ thống chấp nhận lưu phiếu lần đầu. `due_date` tính từ mốc này theo mức ưu tiên: CAO 24 giờ, TRUNG_BINH 72 giờ, THAP 120 giờ, chỉ tính ngày làm việc Thứ Hai-Thứ Bảy (BR-09, BR-10, QT-04). Ví dụ trên là mức CAO, không vướng Chủ Nhật.
-- `is_verified`: `false` khi thiết bị không có ngày mua - phiếu vào danh sách chờ Quản lý trung tâm quyết định (BR-13, QT-05).
-- `is_warranty`: `true` miễn phí; `false` tính phí; **`null` khi phiếu đang chờ xác minh** (BR-12, BR-13).
-- `sla_color`: `XANH` còn từ 25% trở lên; `VANG` còn dưới 25% và lớn hơn 0; `DO` còn 0% trở xuống (BR-11).
-- `repeat_fault_warning`: khác `null` khi phiếu này là **lần thứ 3 trở đi** cùng nhóm sự cố trên thiết bị (BR-15); phiếu vẫn được tạo bình thường.
+- `received_at`: thời điểm hệ thống chấp nhận lưu phiếu lần đầu. `due_date` tính từ mốc này theo mức ưu tiên: CAO 24 giờ, TRUNG_BINH 72 giờ, THAP 120 giờ, và Chủ Nhật không được tính (BR-09, BR-10, QT-04). Ví dụ trên là mức CAO, không vướng Chủ Nhật.
+- `status`: luôn là `MOI` khi tạo. Trong suốt luồng L2 trạng thái không đổi; việc chuyển trạng thái thuộc luồng khác (BR-07).
+- `center_code` và người tạo: lấy từ token, không nhận từ client (BR-17).
+- `is_warranty` bằng `null` **chính là** dấu hiệu phiếu chưa được duyệt. Mọi phiếu đều chờ Quản lý trung tâm quyết định (BR-14), nên không có trường cờ riêng.
 
-```json
-"repeat_fault_warning": {
-  "category_id": 1,
-  "previous_count": 2,
-  "message": "Thiết bị đã bảo hành lỗi Màn hình 2 lần. Đây là lần thứ 3 - cần báo Quản lý trung tâm xem xét."
-}
-```
-
-**RESPONSE 400 Bad Request** - thiếu mô tả lỗi (AC4.3) hoặc thiếu nhóm sự cố / mức ưu tiên (AC4.4)
+**RESPONSE 400 Bad Request** - thiếu mô tả lỗi (AC4.2)
 
 ```json
 { "error": { "code": "VALIDATION_FAILED", "message": "Mô tả lỗi do khách kể là trường bắt buộc", "fields": { "issue_desc": "Trường bắt buộc" } } }
 ```
 
-**RESPONSE 404 Not Found** - `customer_id`, `device_id` hoặc `center_id` không tồn tại.
-**RESPONSE 409 Conflict** - thiết bị đang có phiếu chưa đạt trạng thái Đã đóng (BR-06)
+Thiếu `category_id` hoặc `priority` thì cùng mã lỗi này với thông báo "Vui lòng chọn nhóm sự cố và mức ưu tiên".
+
+**RESPONSE 404 Not Found** - `customer_id`, `device_id` hoặc `category_id` không tồn tại.
+**RESPONSE 409 Conflict** - thiết bị đang có phiếu chưa đạt trạng thái Đã đóng (AC4.3, BR-06)
 
 ```json
-{ "error": { "code": "DEVICE_HAS_OPEN_TICKET", "message": "Thiết bị đang có phiếu chưa đóng", "fields": { "open_ticket_code": "BH-000198/2026" } } }
+{ "error": { "code": "DEVICE_HAS_OPEN_TICKET", "message": "Thiết bị đang có phiếu BH-000123/2026 chưa đóng", "fields": { "open_ticket_code": "BH-000123/2026" } } }
 ```
 
-**RESPONSE 403 Forbidden** - người gọi không phải Nhân viên tiếp nhận, hoặc `center_id` khác trung tâm trong token (BR-17, QT-14).
+**RESPONSE 403 Forbidden** - người gọi không phải Nhân viên tiếp nhận.
 
-> **Khác biệt so với ví dụ mẫu của tài liệu:** ví dụ mẫu trả **422** khi thiết bị hết bảo hành. Với SRS này, hết bảo hành **không phải lỗi**: phiếu vẫn được lập và `is_warranty = false` (tính phí, AC9.2), còn thiếu ngày mua thì `is_verified = false` và `is_warranty = null` (AC9.3). Vì vậy hợp đồng này **không** dùng mã 422.
+### 4.6. GET /api/tickets - danh sách phiếu của trung tâm (UC6, US6, FR7)
 
-### 4.8. GET /api/tickets - bảng theo dõi hạn cam kết và danh sách trong ngày (US7, US8)
+**QUERY**
 
-**Query:**
-
-| Tham số | Ý nghĩa | Ghi chú |
+| Tham số | Bắt buộc | Ý nghĩa |
 | :--- | :--- | :--- |
-| `center_id` | Trung tâm cần xem | Bắt buộc; khác trung tâm trong token thì 403 (BR-17) |
-| `date` | Chỉ lấy phiếu tạo trong ngày | Định dạng `YYYY-MM-DD`, hiểu theo giờ Việt Nam (BR-18) |
-| `status` | Lọc theo trạng thái | `MOI`, `DA_PHAN_CONG`, v.v. |
-| `created_by` | Lọc theo nhân viên tiếp nhận | Chỉ Quản lý trung tâm dùng được (BR-17) |
-| `verified` | `false` để lấy danh sách chờ xác minh | Dùng cho màn hình của Quản lý trung tâm |
-| `exclude_completed` | `true` để loại phiếu đã Hoàn tất | Bảng theo dõi mặc định `true` (BR-11) |
-| `sort` | `sla` để xếp Đỏ, rồi Vàng, rồi Xanh | Mặc định `sla` trên bảng theo dõi (BR-19) |
-| `page`, `size` | Phân trang | `page` từ 1, `size` mặc định 20, tối đa 100 |
+| `category_id` | Không | Lọc theo nhóm sự cố |
+| `warranty` | Không | Lọc theo hình thức: `CHUA_DUYET`, `MIEN_PHI` hoặc `TINH_PHI`. `CHUA_DUYET` tương ứng `is_warranty` rỗng |
+| `page`, `size` | Không | Phân trang |
 
 **RESPONSE 200 OK**
 
 ```json
 {
-  "total": 1,
+  "total": 3,
   "page": 1,
   "size": 20,
   "items": [
     {
       "ticket_id": 88231,
-      "ticket_code": "BH-000231/2026",
+      "ticket_code": "BH-000012/2026",
       "status": "MOI",
-      "customer_name": "Nguyễn Văn A",
-      "phone_masked": "090****567",
-      "device_serial": "SN-PHONE-123",
+      "is_overdue": true,
+      "due_date": "2026-09-06T09:15:00+07:00",
+      "is_warranty": null,
       "priority": "CAO",
-      "received_at": "2026-09-08T14:30:00+07:00",
-      "due_date": "2026-09-09T14:30:00+07:00",
-      "sla_percent_remaining": 10,
-      "sla_color": "VANG"
+      "category": { "category_id": 1, "category_name": "Màn hình" },
+      "customer": { "full_name": "Nguyễn Văn An", "phone_masked": "090****567" },
+      "device": { "serial_no": "SN-PHONE-456" }
+    },
+    {
+      "ticket_id": 88232,
+      "ticket_code": "BH-000013/2026",
+      "status": "MOI",
+      "is_overdue": true,
+      "due_date": "2026-09-07T10:20:00+07:00",
+      "is_warranty": true,
+      "priority": "TRUNG_BINH",
+      "category": { "category_id": 2, "category_name": "Pin" },
+      "customer": { "full_name": "Trần Thị B", "phone_masked": "091****234" },
+      "device": { "serial_no": "SN-EXT-999" }
+    },
+    {
+      "ticket_id": 88233,
+      "ticket_code": "BH-000014/2026",
+      "status": "MOI",
+      "is_overdue": false,
+      "due_date": "2026-09-10T11:05:00+07:00",
+      "is_warranty": null,
+      "priority": "THAP",
+      "category": { "category_id": 6, "category_name": "Khác" },
+      "customer": { "full_name": "Lê Văn C", "phone_masked": "098****567" },
+      "device": { "serial_no": "SN-PHONE-123" }
     }
   ]
 }
 ```
 
-Danh sách rỗng trả `total: 0` và `items: []`; giao diện hiển thị "Trung tâm hiện không có phiếu nào đang xử lý" (AC7.2) hoặc "Chưa có phiếu bảo hành nào được ghi nhận trong ngày hôm nay" (AC8.2).
+Danh sách chia hai nhóm theo BR-20, và thứ tự đã được sắp sẵn: mọi phần tử có `is_overdue` bằng `true` đứng trước, rồi mới tới phần tử `false`, mỗi nhóm xếp theo `due_date` tăng dần. Nhờ vậy đầu nhóm hai đương nhiên là phiếu gần tới hạn nhất, và client chỉ việc vẽ ranh giới nhóm tại chỗ `is_overdue` đổi từ `true` sang `false`. `is_overdue` là trường dẫn xuất, tính bằng phép so `due_date` với thời điểm hiện tại, không lưu trong cơ sở dữ liệu.
 
-**RESPONSE 400 Bad Request** - `date` sai định dạng hoặc `status` không thuộc danh sách hợp lệ.
-**RESPONSE 403 Forbidden** - `center_id` khác trung tâm trong token (BR-17).
+Danh sách rỗng trả `total: 0` và `items: []`.
 
-### 4.9. PATCH /api/tickets/{ticket_id}/warranty-decision - quyết định của Quản lý (US9, US10)
+**RESPONSE 400 Bad Request** - `warranty` không thuộc ba giá trị hợp lệ, hoặc `category_id` không phải số nguyên dương.
+**RESPONSE 403 Forbidden** - người gọi không phải Quản lý trung tâm. Endpoint này chỉ phục vụ hàng đợi duyệt của Quản lý.
+
+### 4.7. PATCH /api/tickets/{ticket_id}/warranty-decision - duyệt hình thức bảo hành (UC6, US6, FR7)
 
 **REQUEST BODY** - duyệt
 
@@ -350,10 +329,10 @@ Danh sách rỗng trả `total: 0` và `items: []`; giao diện hiển thị "Tr
 { "decision": "APPROVE" }
 ```
 
-**REQUEST BODY** - từ chối (bắt buộc có lý do, BR-14)
+**REQUEST BODY** - từ chối, bắt buộc có lý do (AC6.2, BR-14)
 
 ```json
-{ "decision": "REJECT", "reason": "Thiết bị đã quá hạn bảo hành theo hoá đơn khách cung cấp" }
+{ "decision": "REJECT", "reject_reason": "Thiết bị đã quá hạn bảo hành theo hoá đơn khách cung cấp" }
 ```
 
 **RESPONSE 200 OK**
@@ -361,67 +340,53 @@ Danh sách rỗng trả `total: 0` và `items: []`; giao diện hiển thị "Tr
 ```json
 {
   "ticket_id": 88231,
-  "is_verified": true,
   "is_warranty": false,
-  "decided_by": 57,
-  "decided_at": "2026-09-08T16:05:00+07:00",
-  "decision_reason": "Thiết bị đã quá hạn bảo hành theo hoá đơn khách cung cấp"
+  "verified_by": 57,
+  "verified_at": "2026-09-08T16:05:00+07:00",
+  "reject_reason": "Thiết bị đã quá hạn bảo hành theo hoá đơn khách cung cấp"
 }
 ```
 
-Quyết định được lưu **trên phiếu** (`decided_by`, `decided_at`, `decision_reason`, `is_warranty`), **không** ghi thêm dòng vào `ticket_status_log` - bảng đó chỉ ghi chuyển trạng thái (BR-14).
+Quyết định được lưu **trên phiếu** ở ba cột `is_warranty`, `verified_by`, `verified_at` cùng `reject_reason`, và **không** ghi thêm dòng vào `ticket_status_log`, vì bảng đó chỉ ghi chuyển trạng thái (BR-14).
 
-**RESPONSE 400 Bad Request** - từ chối mà thiếu lý do (AC10.3)
+**RESPONSE 400 Bad Request** - từ chối mà thiếu lý do (AC6.3)
 
 ```json
 { "error": { "code": "REASON_REQUIRED", "message": "Vui lòng nhập lý do từ chối" } }
 ```
 
-**RESPONSE 403 Forbidden** - người gọi không phải Quản lý trung tâm (BR-14, QT-05).
+**RESPONSE 403 Forbidden** - người gọi không phải Quản lý trung tâm, hoặc phiếu không thuộc trung tâm trong token (BR-14, BR-17, QT-14).
 **RESPONSE 404 Not Found** - `ticket_id` không tồn tại.
-**RESPONSE 409 Conflict** - phiếu không ở trạng thái chờ xác minh.
-
-### 4.10. GET /api/devices/{device_id}/ticket-history - lịch sử lỗi lặp lại (US11, mức COULD)
-
-**Query:** `category_id` (bắt buộc) - chỉ đếm các phiếu trước đó cùng nhóm sự cố.
-
-**RESPONSE 200 OK**
+**RESPONSE 409 Conflict** - phiếu đã được duyệt trước đó (BR-14)
 
 ```json
-{ "device_id": 3311, "category_id": 1, "previous_count": 2, "tickets": ["BH-000042/2026", "BH-000117/2026"] }
+{ "error": { "code": "ALREADY_DECIDED", "message": "Phiếu đã được duyệt" } }
 ```
-
-`previous_count` từ 2 trở lên nghĩa là phiếu đang lập sẽ là lần thứ 3 trở đi thì hiển thị cảnh báo (BR-15).
-
-**RESPONSE 404 Not Found** - `device_id` không tồn tại.
-**RESPONSE 503 Service Unavailable** - không tải được lịch sử; giao diện bỏ qua cảnh báo và cho tiếp tục lập phiếu (AC11.3).
 
 ---
 
 ## 5. Bảng validation
 
-| Trường | Endpoint | Bắt buộc | Kiểu / ràng buộc | Thông báo lỗi khi vi phạm |
+| Trường | Endpoint | Bắt buộc | Kiểu và ràng buộc | Thông báo lỗi khi vi phạm |
 | :--- | :--- | :--- | :--- | :--- |
-| `phone` | 1, 2 | Có | Chuẩn hoá về 10 chữ số bắt đầu bằng `0`; nhận dạng có tiền tố +84 hoặc 84, có dấu cách hoặc dấu chấm (QT-02) | Số điện thoại phải gồm đúng 10 chữ số (dạng 0xxxxxxxxx) |
-| `full_name` | 2 | Có | Chuỗi, 1-120 ký tự | Vui lòng nhập Họ tên khách hàng |
+| `phone` | 1, 2 | Có | Chuẩn hoá về 10 chữ số bắt đầu bằng `0`; nhận dạng có tiền tố +84 hoặc 84, có dấu cách hoặc dấu chấm (BR-02, QT-02) | Số điện thoại phải gồm đúng 10 chữ số (dạng 0xxxxxxxxx) |
+| `full_name` | 2 | Có | Chuỗi, 1 đến 120 ký tự | Vui lòng nhập Họ tên khách hàng |
 | `address` | 2 | Không | Chuỗi, tối đa 255 ký tự | không có |
-| `customer_id` | 3, 4, 7 | Có | Số nguyên dương, phải tồn tại | Không tìm thấy khách hàng |
-| `serial_no` | 4 | Có | Chuỗi, 1-50 ký tự, duy nhất toàn hệ thống; nếu đã thuộc khách khác thì từ chối (QT-03) | Số serial/IMEI là trường bắt buộc |
-| `purchase_date` | 4 | Không | Ngày `YYYY-MM-DD`; để trống nghĩa là thiết bị không có hồ sơ mua (BR-04) | Ngày mua không hợp lệ |
-| `purchase_place` | 4 | Không | Chuỗi, tối đa 255 ký tự; chỉ nhập khi có hoá đơn | không có |
-| `warranty_months` | 4 | Không | Số nguyên 1-120; mặc định 12 theo Mục 8 | Số tháng bảo hành không hợp lệ |
-| `device_id` | 7, 10 | Có | Số nguyên dương, phải thuộc `customer_id` (QT-03) | Thiết bị không thuộc về khách hàng này |
-| `center_id` | 7, 8 | Có | Số nguyên dương, phải tồn tại; phải trùng trung tâm trong token (QT-14) | Trung tâm không hợp lệ |
-| `issue_desc` | 7 | Có | Chuỗi, 1-2000 ký tự | Mô tả lỗi do khách kể là trường bắt buộc |
-| `category_ids` | 7 | Có | Mảng số nguyên, **1 đến 5 phần tử**, không trùng nhau; mỗi phần tử phải có trong danh mục (BR-15) | Phiếu phải có từ 1 đến 5 nhóm sự cố |
-| `priority` | 7 | Có | Một trong `CAO`, `TRUNG_BINH`, `THAP`; client điền sẵn theo `default_priority` của nhóm (BR-15) | Mức ưu tiên không hợp lệ |
-| `accessories` | 7 | Không | Mảng, mỗi phần tử thuộc `SAC` / `TAI_NGHE` / `HOP` / `KHAC` (Mục 5.1) | Phụ kiện không hợp lệ |
-| `cosmetic_condition` | 7 | Không | Chuỗi, tối đa 255 ký tự | không có |
-| `Idempotency-Key` | 7 | Có | UUID; gửi lại cùng khoá không tạo phiếu thứ hai (NFR4) | Thiếu khoá chống trùng khi lưu phiếu |
-| `status` | 8 | Không | Một trong các trạng thái của vòng đời (BR-07) | Trạng thái không hợp lệ |
-| `date` | 8 | Không | `YYYY-MM-DD` theo giờ Việt Nam (BR-18) | Ngày không hợp lệ |
-| `decision` | 9 | Có | `APPROVE` hoặc `REJECT` | Quyết định không hợp lệ |
-| `reason` | 9 | Có khi `REJECT` | Chuỗi, 1-255 ký tự | Vui lòng nhập lý do từ chối |
+| `customer_id` | 3, 5 | Có | Số nguyên dương, phải tồn tại | Không tìm thấy khách hàng |
+| `serial_no` | 3 | Có | Chuỗi, 1 đến 50 ký tự, duy nhất toàn hệ thống (BR-03, QT-03) | Số serial/IMEI là trường bắt buộc |
+| `is_external` | 3 | Có | `true` khi thiết bị không có trong lịch sử mua hàng (BR-04) | Thiết bị mua ngoài phải có ghi chú nguồn gốc |
+| `origin_note` | 3 | Có khi `is_external` bằng `true` | Chuỗi, tối đa 200 ký tự | Thiết bị mua ngoài phải có ghi chú nguồn gốc |
+| `purchase_date` | 3 | Không | Ngày `YYYY-MM-DD`, không được sau ngày hiện tại | Ngày mua không hợp lệ |
+| `warranty_months` | 3 | Không | Số nguyên 1 đến 120; mặc định 12 | Số tháng bảo hành không hợp lệ |
+| `device_id` | 5 | Có | Số nguyên dương, phải thuộc `customer_id` (BR-03, QT-03) | Thiết bị không thuộc về khách hàng này |
+| `issue_desc` | 5 | Có | Chuỗi, 1 đến 2000 ký tự | Mô tả lỗi do khách kể là trường bắt buộc |
+| `category_id` | 5 | Có | Số nguyên dương, phải có trong danh mục (BR-15) | Vui lòng chọn nhóm sự cố và mức ưu tiên |
+| `priority` | 5 | Có | Một trong `CAO`, `TRUNG_BINH`, `THAP`; client điền sẵn theo `default_priority` của nhóm, nhân viên sửa được (BR-21) | Vui lòng chọn nhóm sự cố và mức ưu tiên |
+| `category_id` | 6 | Không | Số nguyên dương, phải có trong danh mục | Nhóm sự cố không hợp lệ |
+| `warranty` | 6 | Không | Một trong `CHUA_DUYET`, `MIEN_PHI`, `TINH_PHI` | Hình thức phiếu không hợp lệ |
+| `page`, `size` | 6 | Không | `page` từ 1; `size` từ 1 đến 100 | Tham số phân trang không hợp lệ |
+| `decision` | 7 | Có | `APPROVE` hoặc `REJECT` | Quyết định không hợp lệ |
+| `reject_reason` | 7 | Có khi `REJECT` | Chuỗi, 1 đến 300 ký tự | Vui lòng nhập lý do từ chối |
 
 ---
 
@@ -429,33 +394,34 @@ Quyết định được lưu **trên phiếu** (`decided_by`, `decided_at`, `de
 
 | Mã lỗi | HTTP | Khi nào | Quy tắc |
 | :--- | :--- | :--- | :--- |
-| `VALIDATION_FAILED` | 400 | Dữ liệu vào sai kiểu, thiếu trường bắt buộc | không có |
-| `INVALID_PHONE` | 400 | SĐT không thành 10 chữ số sau chuẩn hoá | QT-02 |
-| `REASON_REQUIRED` | 400 | Từ chối bảo hành mà thiếu lý do | BR-14 |
 | `UNAUTHENTICATED` | 401 | Thiếu hoặc hết hạn token | không có |
 | `FORBIDDEN_ROLE` | 403 | Vai trò không được gọi endpoint | BR-14, BR-17 |
-| `CENTER_OUT_OF_SCOPE` | 403 | `center_id` khác trung tâm trong token | BR-17, QT-14 |
-| `CUSTOMER_NOT_FOUND` | 404 | Tra cứu không thấy hồ sơ khách | AC1.2 |
+| `CENTER_OUT_OF_SCOPE` | 403 | Phiếu không thuộc trung tâm trong token | BR-17, QT-14 |
+| `INVALID_PHONE` | 400 | Số điện thoại sai định dạng sau chuẩn hóa | BR-02, QT-02 |
+| `VALIDATION_FAILED` | 400 | Thiếu trường bắt buộc hoặc sai kiểu | BR-01, BR-04 |
+| `REASON_REQUIRED` | 400 | Từ chối bảo hành miễn phí mà thiếu lý do | BR-14 |
+| `PARAM_INVALID` | 400 | Tham số truy vấn sai | không có |
+| `CUSTOMER_NOT_FOUND` | 404 | Số điện thoại hoặc `customer_id` không có hồ sơ | không có |
+| `DEVICE_NOT_FOUND` | 404 | `device_id` không tồn tại | không có |
+| `CATEGORY_NOT_FOUND` | 404 | `category_id` không có trong danh mục | BR-15 |
 | `TICKET_NOT_FOUND` | 404 | `ticket_id` không tồn tại | không có |
-| `CUSTOMER_EXISTS` | 409 | Trùng SĐT khi tạo khách | BR-01, QT-01 |
-| `SERIAL_OWNED_BY_OTHER` | 409 | Serial đã thuộc khách khác | BR-05, QT-03 |
-| `CATEGORY_EXISTS` | 409 | Trùng tên nhóm không phân biệt hoa thường | BR-15 |
+| `CUSTOMER_EXISTS` | 409 | Trùng số điện thoại khi lưu đồng thời | BR-01, QT-01 |
+| `SERIAL_OWNED_BY_OTHER` | 409 | Serial đang thuộc khách khác | BR-03, BR-05, QT-03 |
 | `DEVICE_HAS_OPEN_TICKET` | 409 | Thiết bị đang có phiếu chưa đạt trạng thái Đã đóng | BR-06 |
-| `NOT_AWAITING_VERIFICATION` | 409 | Phiếu không ở trạng thái chờ xác minh | BR-13 |
-| `HISTORY_UNAVAILABLE` | 503 | Không tải được lịch sử thiết bị | AC11.3 |
+| `ALREADY_DECIDED` | 409 | Phiếu đã được duyệt | BR-14 |
 
 ---
 
 ## 7. Truy vết quy tắc nghiệp vụ trong hợp đồng
 
-| Quy tắc | Thể hiện ở đâu trong hợp đồng |
+| Quy tắc case study | Thể hiện ở hợp đồng này |
 | :--- | :--- |
-| QT-01 SĐT duy nhất | 409 `CUSTOMER_EXISTS` (endpoint 2) |
-| QT-02 Chuẩn hoá SĐT | Validation `phone`; 400 `INVALID_PHONE` (endpoint 1, 2) |
-| QT-03 Thiết bị duy nhất, một chủ | Validation `serial_no`, `device_id`; 409 `SERIAL_OWNED_BY_OTHER` |
-| QT-04 Hạn cam kết theo mức ưu tiên | `due_date` trong response 201 của endpoint 7 |
-| QT-05 Điều kiện bảo hành và phê duyệt | `is_verified`, `is_warranty` (endpoint 7); endpoint 9 và 400 `REASON_REQUIRED` |
-| QT-06 Vòng đời và nhật ký trạng thái | `status: "MOI"` khi tạo; hệ thống ghi dòng nhật ký đầu tiên; không có endpoint đổi trạng thái trong L2 |
-| QT-13 Không xóa vật lý | Hợp đồng không có endpoint `DELETE` nào |
-| QT-14 Phạm vi dữ liệu | 403 `CENTER_OUT_OF_SCOPE`; bảng phân quyền ở mục 3 |
-| QT-15 Che SĐT | `phone_masked` ở mọi response; `phone` chỉ trả cho Quản lý trung tâm |
+| QT-01 SĐT duy nhất | `409 CUSTOMER_EXISTS` kèm `existing_customer_id` ở endpoint 2 |
+| QT-02 Chuẩn hóa SĐT | Chuẩn hóa trước khi tra ở endpoint 1 và trước khi lưu ở endpoint 2; `400 INVALID_PHONE` |
+| QT-03 Thiết bị xác định bằng serial | `serial_no` duy nhất ở endpoint 3; `409 SERIAL_OWNED_BY_OTHER` |
+| QT-04 Hạn cam kết theo mức ưu tiên | `due_date` do hệ thống sinh ở endpoint 5, kèm BR-09 và BR-10 |
+| QT-05 Điều kiện bảo hành và phê duyệt | Hợp đồng **không** tự xác định điều kiện bảo hành: mọi phiếu tạo ra đều có `is_warranty` rỗng, và endpoint 7 là nơi duy nhất chốt hình thức |
+| QT-06 Vòng đời trạng thái | `status` luôn là `MOI` ở endpoint 5; chuyển trạng thái thuộc luồng khác nên không endpoint nào trong hợp đồng này đổi `status` |
+| QT-13 Không xóa vật lý | Không có endpoint DELETE |
+| QT-14 Phạm vi dữ liệu | Bảng phân quyền ở mục 3; `403 CENTER_OUT_OF_SCOPE` ở endpoint 6 và 7 |
+| QT-15 Che SĐT | `phone_masked` ở mọi response; trường `phone` đầy đủ chỉ trả cho Quản lý trung tâm |
