@@ -24,6 +24,7 @@
 | **DeepSeek** | Format lại file cho dễ đọc | api-contract.md | Đọc và đối chiếu lại với các yêu cầu của Tài liệu tự học buổi 3, đồng thời đối chiếu lại với file SRS|
 | **DeepSeek** | Kiểm tra chính tả, sửa lại cách format và trình bày | SRS.md | Đọc lại tài liệu một lần cuối, git diff SRS.md để kiểm tra |
 | **DeepSeek** | Sửa lại format và chính tả | mô tả của wireframe.png | Đọc lại so với tài liệu gốc |
+| **DeepSeek** | Tạo SQL SDD Skeleton  | PDF bài | Sử dụng erd dbml chuyển đổi sang skeleton, kiểm tra lại với tài liệu gốc |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
