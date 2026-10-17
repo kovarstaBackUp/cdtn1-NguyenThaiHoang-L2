@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #111;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .title {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .search,
+  .searchPhoneNumber,
+  .thongTinKhachHang,
+  .phone,
+  .table,
+  .details,
+  .topBar,
+  .deviceListDisplay {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.5rem;
+  }
+
+  input:not([type="radio"]):not([type="checkbox"]),
+  textarea,
+  button {
+    padding: 0.3rem 0.6rem;
+    font: inherit;
+    color: inherit;
+    border: 1px solid #bbb;
+    border-radius: 0.25rem;
+    background: #fff;
+  }
+
+  textarea {
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #e5e5e5;
+    text-align: left;
+  }
+}
