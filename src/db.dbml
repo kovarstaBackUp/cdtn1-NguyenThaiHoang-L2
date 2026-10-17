@@ -1,0 +1,88 @@
+
+Table customer [note: 'Khách hàng'] {
+      customer_id bigserial [pk] // Khóa chính
+        phone varchar(20) [unique, not null] // Số điện thoại đã chuẩn hóa 10 chữ số, duy nhất
+          full_name varchar(120) [not null] // Họ tên khách hàng
+            address varchar(255) // Địa chỉ liên hệ
+              is_active boolean [not null] // Còn sử dụng hay đã đánh dấu ẩn
+}
+
+Table device [note: 'Thiết bị của khách, gồm thiết bị mua ngoài đã đăng ký'] {
+      device_id bigserial [pk] // Khóa chính
+        customer_id bigint [not null] // Chủ sở hữu thiết bị
+          serial_no varchar(50) [unique, not null] // Số serial hoặc IMEI, định danh duy nhất của máy
+            is_external boolean [not null] // Thiết bị mua ngoài, không có hồ sơ mua
+              origin_note varchar(200) // Ghi chú nguồn gốc, bắt buộc khi là thiết bị mua ngoài
+                purchase_date date // Ngày mua; rỗng khi khách không nhớ và không có hóa đơn
+                  warranty_months smallint [not null] // Số tháng bảo hành của máy, tự điền khi chọn từ lịch sử mua
+                    is_active boolean [not null] // Còn sử dụng hay đã đánh dấu ẩn
+}
+
+Table employee [note: 'Người dùng hệ thống, hai vai trò NHAN_VIEN và QUAN_LY'] {
+      employee_id bigserial [pk] // Khóa chính
+        full_name varchar(120) [not null] // Họ tên nhân sự, do bộ phận tổ chức quản lý
+          role varchar(20) [not null] // Vai trò: NHAN_VIEN hoặc QUAN_LY
+            center_code varchar(20) [not null] // Mã trung tâm nơi tài khoản làm việc
+}
+
+Table issue_category [note: 'Danh mục nhóm sự cố, dữ liệu cài sẵn'] {
+      category_id serial [pk] // Khóa chính
+        category_name varchar(60) [unique, not null] // Tên nhóm sự cố, danh mục cài sẵn
+          default_priority varchar(10) [not null] // Mức ưu tiên điền sẵn khi nhân viên chọn nhóm này
+}
+
+Table ticket [note: 'Phiếu bảo hành'] {
+      ticket_id bigserial [pk] // Khóa chính
+        ticket_code varchar(20) [unique, not null] // Mã phiếu hiển thị dạng BH-xxxxxx/yyyy
+          customer_id bigint [not null] // Khách hàng của phiếu
+            device_id bigint [not null] // Thiết bị được tiếp nhận
+              center_code varchar(20) [not null] // Mã trung tâm tiếp nhận, chốt tại thời điểm lập phiếu
+                created_by bigint [not null] // Nhân viên tiếp nhận đã lập phiếu
+                  issue_desc varchar(2000) [not null] // Mô tả lỗi do khách kể
+                    priority varchar(10) [not null] // Mức ưu tiên: CAO, TRUNG_BINH hoặc THAP
+                      status varchar(20) [not null] // Trạng thái hiện tại trong vòng đời Hình 6.2
+                        category_id int [not null] // Nhóm sự cố của phiếu, đúng một nhóm
+                          is_warranty boolean // Miễn phí, tính phí, hoặc rỗng khi phiếu chưa được duyệt
+                            verified_by bigint // Quản lý trung tâm đã quyết định hình thức
+                              verified_at timestamptz // Thời điểm quyết định
+                                reject_reason varchar(300) // Lý do từ chối bảo hành miễn phí, bắt buộc khi từ chối
+                                  received_at timestamptz [not null] // Thời điểm tiếp nhận, mốc tính hạn cam kết
+                                    due_date timestamptz [not null] // Hạn cam kết trả máy
+
+                                      indexes {
+                                              (center_code, due_date)
+                                                  (device_id, status)
+                                                    }
+}
+
+Table ticket_status_log [note: 'Nhật ký trạng thái của phiếu'] {
+      log_id bigserial [pk] // Khóa chính
+        ticket_id bigint [not null] // Phiếu được ghi nhật ký
+          from_status varchar(20) // Trạng thái trước; rỗng ở dòng đầu tiên
+            to_status varchar(20) [not null] // Trạng thái sau
+              changed_by bigint [not null] // Người thực hiện chuyển trạng thái
+                changed_at timestamptz [not null] // Thời điểm chuyển trạng thái
+                  note varchar(255) // Ghi chú kèm theo
+
+                    indexes {
+                            (ticket_id, changed_at)
+                              }
+}
+
+Ref: device.customer_id > customer.customer_id
+Ref: ticket.customer_id > customer.customer_id
+Ref: ticket.device_id > device.device_id
+Ref: ticket.category_id > issue_category.category_id
+Ref: ticket.created_by > employee.employee_id
+Ref: ticket.verified_by > employee.employee_id
+Ref: ticket_status_log.ticket_id > ticket.ticket_id
+Ref: ticket_status_log.changed_by > employee.employee_id
+
+                    }
+}
+                                      }
+}
+}
+}
+}
+}

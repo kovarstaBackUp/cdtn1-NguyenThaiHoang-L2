@@ -1,0 +1,33 @@
+{
+  "extends": "$app/tsconfig",
+  "include": ["src", "*"],
+  "exclude": ["src/service-worker"],
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "paths": {
+      "#errors/*": ["./src/errors/*"],
+      "#lib": ["./src/lib/index.ts"],
+      "#lib/*": ["./src/lib/*"],
+      "#prisma/*": ["./src/prisma/*"],
+      "#repositories/*": ["./src/repositories/*"],
+      "#services/*": ["./src/services/*"],
+      "#validators/*": ["./src/validators/*"]
+    },
+    "types": [
+      "node",
+      "$app/types"
+    ],
+    "module": "preserve"
+  }
+}
