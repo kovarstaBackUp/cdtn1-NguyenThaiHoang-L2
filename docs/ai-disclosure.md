@@ -25,6 +25,10 @@
 | **DeepSeek** | Kiểm tra chính tả, sửa lại cách format và trình bày | SRS.md | Đọc lại tài liệu một lần cuối, git diff SRS.md để kiểm tra |
 | **DeepSeek** | Sửa lại format và chính tả | mô tả của wireframe.png | Đọc lại so với tài liệu gốc |
 | **DeepSeek** | Tạo SQL SDD Skeleton  | PDF bài | Sử dụng erd dbml chuyển đổi sang skeleton, kiểm tra lại với tài liệu gốc |
+| **DeepSeek** | Viết Schema Database | /src/src/prisma/contract.ts| Kiểm tra lại so với ERD trước đó |
+| **DeepSeek** | Viết API template cho các cổng API | PDF bài | Kiểm tra hoạt động và tiếp tục viết API|
+| **DeepSeek** | Chỉnh đốn lại CSS Styling  | /src/src/lib/app.css | Kiểm tra trang hoạt động chính xác và hiển thị đúng |
+| **DeepSeek** | Tạo nên README.md | README.md | Kiểm chứng lại README và lập lại môi trường từ chính nó |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
