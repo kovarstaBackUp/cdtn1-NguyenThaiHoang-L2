@@ -29,6 +29,7 @@
 | **DeepSeek** | Viết API template cho các cổng API | PDF bài | Kiểm tra hoạt động và tiếp tục viết API|
 | **DeepSeek** | Chỉnh đốn lại CSS Styling  | /src/src/lib/app.css | Kiểm tra trang hoạt động chính xác và hiển thị đúng |
 | **DeepSeek** | Tạo nên README.md | README.md | Kiểm chứng lại README và lập lại môi trường từ chính nó |
+| **DeepSeek** | Áp dụng base64 session check vào ứng dụng |  src/src/lib/server/session.ts, src/src/routes/(app)/+layout.server.ts, src/src/routes/+page.server.ts, src/src/routes/login, src/src/routes/logout/ | Đọc và kiểm chứng lại các dòng code, đồng thời kiểm tra ứng dụng hoạt động ổn định |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
