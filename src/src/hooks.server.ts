@@ -6,38 +6,26 @@ import {
   DEV_ROLE,
 } from "$app/env/private";
 
-import { errorResponse } from "#lib/server/api";
+import { decodeSession, SESSION_COOKIE } from "#lib/server/session";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  event.locals.employee = null;
-
   const header = event.request.headers.get("authorization");
-  const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : null;
+  const bearer = header?.startsWith("Bearer ") ? header.slice(7).trim() : null;
 
-  if (token) {
-    try {
-      const payload = JSON.parse(Buffer.from(token, "base64").toString("utf8"));
-      event.locals.employee = {
-        employeeId: BigInt(payload.employee_id),
-        role: String(payload.role),
-        centerCode: String(payload.center_code),
-      };
-    } catch {
-      event.locals.employee = null;
-    }
-  }
+  // A page sends the session cookie; a script can send a Bearer token. Both
+  // carry the same payload.
+  event.locals.employee =
+    decodeSession(bearer) ?? decodeSession(event.cookies.get(SESSION_COOKIE));
 
-  if (!event.locals.employee && dev) {
+  // Keep the dev fallback for /api only, so curl and scripts work without a
+  // token while the screens still require a login.
+  if (!event.locals.employee && dev && event.url.pathname.startsWith("/api/")) {
     event.locals.employee = {
       employeeId: BigInt(DEV_EMPLOYEE_ID),
       role: DEV_ROLE,
       centerCode: DEV_CENTER_CODE,
     };
   }
-
-  //if (event.url.pathname.startsWith('/api/') && !event.locals.employee) {
-  //  return errorResponse(401, 'UNAUTHENTICATED', 'Vui lòng đăng nhập');
-  //}
 
   return resolve(event);
 };
