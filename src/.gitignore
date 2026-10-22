@@ -1,6 +1,9 @@
 node_modules/
 dist/
+build/
 .env
 /.alchemy
 /.prisma-composer
 /.tmp
+.vitest/
+.svelte-kit/

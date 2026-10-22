@@ -32,7 +32,9 @@
     "migration:show": "prisma migration show",
     "migration:status": "prisma migration status",
     "prepare": "svelte-kit sync || echo ''",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@prisma/dev": "0.25.2",
@@ -45,7 +47,8 @@
     "svelte-check": "^4.7.6",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vite": "^8.3.3"
+    "vite": "^8.3.3",
+    "vitest": "^5.0.5"
   },
   "dependencies": {
     "@prisma/composer": "0.28.0",
