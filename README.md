@@ -83,7 +83,20 @@ pnpm run dev
 ```
 
 Vite phục vụ ứng dụng tại `http://localhost:5173`, hoặc cổng trống kế tiếp nếu cổng
-đó đang bận - hãy đọc cổng mà nó in ra. Sau đó mở `http://localhost:5173/traCuuKhachHang`.
+đó đang bận - hãy đọc cổng mà nó in ra. Sau đó mở `/` và đăng nhập.
+
+### 7. Đăng nhập
+
+Hai tài khoản demo, dùng chung một trang `/login`:
+
+| Tài khoản | Mật khẩu | Vai trò | Trang bắt đầu |
+|---|---|---|---|
+| `admin` | `admin` | Quản lý trung tâm | `/duyetPhieuBaoHanh` |
+| `employee` | `employee` | Nhân viên tiếp nhận | `/traCuuKhachHang` |
+
+Đăng nhập chỉ đổi danh tính trong phiên (cookie `session`, 8 giờ). Vào `/logout` để
+xoá phiên. Khi chưa đăng nhập, mọi màn hình trong nhóm `(app)` đều chuyển về
+`/login`.
 
 ## Các lệnh thường dùng
 
@@ -98,6 +111,19 @@ Vite phục vụ ứng dụng tại `http://localhost:5173`, hoặc cổng trố
 | `pnpm run db:seed` | Nạp dữ liệu mẫu (chạy lại vẫn an toàn) |
 | `pnpm run contract:emit` | Sinh lại `contract.json` / `contract.d.ts` sau khi sửa contract |
 | `pnpm run migration:status` | So sánh đồ thị migration với marker trong cơ sở dữ liệu |
+| `pnpm run test` | Chạy bộ kiểm thử Vitest một lần |
+| `pnpm run test:watch` | Chạy Vitest ở chế độ theo dõi |
+
+## Kiểm thử
+
+```bash
+pnpm run test          # chạy một lần
+pnpm run test:watch    # chế độ theo dõi
+```
+
+`tests/` chứa các unit test chạy trên hàm thuần, không cần cơ sở dữ liệu: che số điện
+thoại (NFR2), chuẩn hoá số điện thoại (BR-03), và cách tính hạn cam kết (BR-10, kể cả
+việc bỏ qua Chủ nhật).
 
 ## Màn hình
 
@@ -166,6 +192,28 @@ Phần xác thực mới chỉ là stub. `src/hooks.server.ts` giải mã
 `Authorization: Bearer <base64 of {"employee_id","role","center_code"}>` thành
 `locals.employee`. Khi không có header và Vite đang ở chế độ dev, hệ thống dùng các
 biến `DEV_*`, nên có thể mở app trên trình duyệt mà không cần tạo token.
+
+**Kiểm tra vai trò đang được tắt có chủ đích để ai cũng dùng được mọi màn hình.**
+Hằng `AUTHORIZATION_ENFORCED` trong `src/services/access.ts` đang là `false`, khiến
+`requireReceptionist` và `requireManager` không làm gì. Đổi hằng đó thành `true` để
+khôi phục bảng phân quyền ở mục 3: nhân viên tiếp nhận có `POST /api/customers`,
+`POST /api/devices` và `POST /api/tickets`; chỉ Quản lý trung tâm được đọc hàng đợi
+hoặc quyết định phiếu.
+
+Giới hạn theo trung tâm (BR-17, QT-14) vẫn được áp dụng: người gọi chỉ thấy các
+phiếu có `center_code` trùng với token của mình. Mặc định khi dev là `TT01` và dữ
+liệu mẫu cũng nằm ở đó, nên bình thường bạn sẽ không thấy khác biệt.
+
+## Phân quyền
+
+Phần xác thực mới chỉ là stub. `src/hooks.server.ts` đọc danh tính từ hai nguồn:
+cookie phiên `session` do trang `/login` đặt, hoặc header
+`Authorization: Bearer <base64 of {"employee_id","role","center_code"}>` cho script
+gọi API. Cả hai mang cùng một payload.
+
+Riêng request tới `/api/` khi chạy dev mà không có danh tính sẽ dùng biến `DEV_*`,
+nên `curl` và script vẫn gọi được API mà không cần token. Các màn hình thì bắt buộc
+đăng nhập.
 
 **Kiểm tra vai trò đang được tắt có chủ đích để ai cũng dùng được mọi màn hình.**
 Hằng `AUTHORIZATION_ENFORCED` trong `src/services/access.ts` đang là `false`, khiến
