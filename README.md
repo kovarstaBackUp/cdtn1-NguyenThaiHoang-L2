@@ -16,6 +16,8 @@ cd cdtn1-NguyenThaiHoang-L2/src
 
 **Cách A - dùng Docker image kèm sẵn (chọn cách này nếu bạn chưa có PostgreSQL).**
 
+Tải docker nếu như chưa có: https://www.docker.com/products/docker-desktop/
+
 `docker-compose.yaml` chạy `postgres:16-alpine` tại `localhost:5432` với
 user/password là `postgres`/`postgres`:
 
