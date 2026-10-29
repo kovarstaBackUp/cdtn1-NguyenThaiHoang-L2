@@ -2,13 +2,13 @@
 
 ## Yêu cầu
 
-- Node.js 20 trở lên (phát triển trên 26)
+- Node.js v26.12.0 trở lên (phát triển trên 26)
 - pnpm 11 (`packageManager` trong `package.json`)
 - PostgreSQL 15 trở lên - dùng Docker image kèm sẵn hoặc server bạn đã có
 
 ## Chạy nhanh
 
-### 1. Clone về máy 
+### 1. Clone về máy
 git clone https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2.git
 cd cdtn1-NguyenThaiHoang-L2/src
 
