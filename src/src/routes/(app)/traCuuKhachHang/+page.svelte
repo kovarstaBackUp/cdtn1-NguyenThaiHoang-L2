@@ -173,6 +173,9 @@
     </div>
 {/if}
 
+{#if loading === true}
+    <div>Dang tai vui long doi</div>
+{/if}
 <div class="error">
     {message}
 </div>
