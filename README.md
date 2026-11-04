@@ -25,8 +25,8 @@ user/password là `postgres`/`postgres`:
 docker compose up -d db
 ```
 
-Chỉ cần vậy là đủ cho phần cơ sở dữ liệu. Bạn chỉ dùng Docker cho đúng một
-container này.
+Chỉ cần vậy là đủ cho phần cơ sở dữ liệu. Nếu muốn chạy cả ứng dụng trong
+Docker, xem mục **Chạy toàn bộ bằng Docker** bên dưới.
 
 **Cách B - dùng PostgreSQL sẵn có (bỏ qua Docker hoàn toàn).**
 
@@ -99,6 +99,26 @@ Hai tài khoản demo, dùng chung một trang `/login`:
 Đăng nhập chỉ đổi danh tính trong phiên (cookie `session`, 8 giờ). Vào `/logout` để
 xoá phiên. Khi chưa đăng nhập, mọi màn hình trong nhóm `(app)` đều chuyển về
 `/login`.
+
+## Chạy toàn bộ bằng Docker
+
+`Dockerfile` đóng gói ứng dụng theo nhiều giai đoạn (multi-stage) và
+`docker-compose.yaml` dựng cả PostgreSQL, bước tạo schema/nạp dữ liệu mẫu, và
+ứng dụng:
+
+```bash
+docker compose up --build
+```
+
+Mở `http://localhost:3000`. Service `init` chạy `db:init` và `db:seed` một lần
+(cả hai lệnh đều chạy lại an toàn), rồi service `app` mới khởi động. Dữ liệu
+PostgreSQL nằm trong named volume `postgres-data`.
+
+Chỉ dựng cơ sở dữ liệu (dùng với `pnpm run dev`):
+
+```bash
+docker compose up -d db
+```
 
 ## Các lệnh thường dùng
 
