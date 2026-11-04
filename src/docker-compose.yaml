@@ -16,5 +16,37 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  init:
+    build:
+      context: .
+      target: build
+    restart: 'no'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone
+    command:
+      - sh
+      - -c
+      - pnpm run db:init && pnpm run db:seed
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
 volumes:
   postgres-data:
