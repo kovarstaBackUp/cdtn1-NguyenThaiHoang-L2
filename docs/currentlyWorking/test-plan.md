@@ -22,7 +22,7 @@ KHÔNG kiểm, và lý do:
 
 Danh sách mười hai test case nằm ở `test-list.md`; mục này chỉ tóm tắt số lượng và cách chọn dữ liệu.
 
-8 unit (6 ca trên hàm thuần, 2 ca trên service với đối tượng giả) · 1 integration (service cộng PostgreSQL thật) · 2 API (gọi route thật) · 1 tái lập (nạp dữ liệu hai lần).
+8 unit (6 ca trên hàm thuần, 2 ca trên service với đối tượng giả), 1 integration (service cộng PostgreSQL thật), 2 API (gọi route thật), 1 tái lập (nạp dữ liệu hai lần).
 
 Kỹ thuật chọn dữ liệu:
 
@@ -30,7 +30,7 @@ Kỹ thuật chọn dữ liệu:
 - Giá trị biên cho đúng ranh giới 10 chữ số, thử cả hai phía là 9 và 11.
 - Giá trị biên theo thời gian cho mốc Chủ Nhật của hạn cam kết: một ca không vướng Chủ Nhật và một ca vướng.
 
-Đủ năm loại BT3: luồng đúng 7 · biên 2 · dữ liệu sai 2, trong đó một ca là ca bảo mật · tái lập 1. Tổng 12.
+Đủ năm loại BT3: luồng đúng 7, biên 2, dữ liệu sai 2, trong đó một ca là ca bảo mật, tái lập 1. Tổng 12.
 
 Ngoài mười hai ca trên, mỗi bug đã sửa có một ca hồi quy riêng, liệt kê ở cuối `test-list.md` và không tính vào con số 12. Hiện có TC-13 cho BUG-02 và TC-14 cho BUG-03.
 

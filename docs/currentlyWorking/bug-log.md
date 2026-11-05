@@ -29,7 +29,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 
 ## BUG-01 - Dòng nhật ký đầu tiên không bao giờ được ghi khi lập phiếu
 
-1. **Mã và mức độ:** BUG-01 · MAJOR, vì dữ liệu lịch sử của phiếu bị thiếu, nhưng việc lập phiếu vẫn chạy.
+1. **Mã và mức độ:** BUG-01, MAJOR, vì dữ liệu lịch sử của phiếu bị thiếu, nhưng việc lập phiếu vẫn chạy.
 2. **Phát hiện bởi:** rà soát mã nguồn luồng lập phiếu. Ca TC-07 được viết sau đó để canh lỗi này quay lại.
 3. **Triệu chứng:** lập phiếu thành công nhưng bảng `ticket_status_log` vẫn rỗng. Không dựng lại được vòng đời phiếu, nên câu hỏi "phiếu này ở trạng thái Đang xử lý bao lâu" không trả lời được, đúng lý do mà tài liệu buổi 5 dùng để bắt buộc có bảng lịch sử.
 4. **Cách tái lập:** hai đường, cả hai quan sát bằng cùng một câu SQL.
@@ -46,7 +46,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 
 ## BUG-02 - Ngày mua bị so với ngày UTC thay vì ngày Việt Nam
 
-1. **Mã và mức độ:** BUG-02 · MAJOR, vì hệ thống từ chối một dữ liệu đúng, nhưng nhân viên vẫn còn cách nhập vòng.
+1. **Mã và mức độ:** BUG-02, MAJOR, vì hệ thống từ chối một dữ liệu đúng, nhưng nhân viên vẫn còn cách nhập vòng.
 2. **Phát hiện bởi:** rà soát `src/src/validators/device.validator.ts`. Ca TC-13 được viết sau đó để canh lỗi này quay lại.
 3. **Triệu chứng:** trong khoảng 00:00 đến 06:59 giờ Việt Nam, nhân viên nhập ngày mua là hôm nay thì bị từ chối với thông điệp "Ngày mua không hợp lệ", dù quy tắc chỉ cấm ngày **sau** hôm nay. Buổi sáng là lúc quầy dễ gặp khách mua máy nhất.
 4. **Cách tái lập:** lỗi phụ thuộc đồng hồ nên có hai đường, một đường đúng như thực tế và một đường cố định được.
@@ -64,7 +64,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 
 ## BUG-03 - Ngày mua không được kiểm định dạng nên dữ liệu sai lọt qua tầng kiểm tra
 
-1. **Mã và mức độ:** BUG-03 · MAJOR, vì API không từ chối dữ liệu sai ở ranh giới như hợp đồng đã hứa; nếu tầng lưu trữ còn nhận giá trị đó thì ngày mua bị lưu sai, và trường hợp đó đáng xếp Critical.
+1. **Mã và mức độ:** BUG-03, MAJOR, vì API không từ chối dữ liệu sai ở ranh giới như hợp đồng đã hứa; nếu tầng lưu trữ còn nhận giá trị đó thì ngày mua bị lưu sai, và trường hợp đó đáng xếp Critical.
 2. **Phát hiện bởi:** rà soát `src/src/validators/device.validator.ts`. Ca TC-14 được viết sau đó để canh lỗi này quay lại.
 3. **Triệu chứng:** gửi `purchase_date` sai định dạng, ví dụ `"10/02/2026"`, thì validator chấp nhận và trả về nguyên chuỗi, nên giá trị thô đi xuống tầng lưu trữ. Hợp đồng API hứa `400 VALIDATION_FAILED` cho dữ liệu sai, nhưng ở đây không có `400`. Hậu quả ở tầng lưu trữ phụ thuộc `datestyle` của PostgreSQL: nếu từ chối thì người gọi nhận `500`, nếu chấp nhận thì `"10/02/2026"` có thể được hiểu thành ngày 2 tháng 10, tức lưu sai ngày mua.
 4. **Cách tái lập:** chạy được ở bất kỳ giờ nào, không phụ thuộc đồng hồ.
