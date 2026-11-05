@@ -20,7 +20,7 @@ KHÔNG kiểm, và lý do:
 
 ## 2. Loại test và số lượng
 
-Danh sách mười hai test case nằm ở `test-list.md`; mục này chỉ tóm tắt số lượng và cách chọn dữ liệu.
+Mỗi ca là một test trong `src/tests/`, mã ca ghi ngay trong tiêu đề test, ví dụ `TC-01`. Mục này tóm tắt số lượng và cách chọn dữ liệu, không chép lại từng ca.
 
 8 unit (6 ca trên hàm thuần, 2 ca trên service với đối tượng giả), 1 integration (service cộng PostgreSQL thật), 2 API (gọi route thật), 1 tái lập (nạp dữ liệu hai lần).
 
@@ -32,7 +32,7 @@ Kỹ thuật chọn dữ liệu:
 
 Đủ năm loại BT3: luồng đúng 7, biên 2, dữ liệu sai 2, trong đó một ca là ca bảo mật, tái lập 1. Tổng 12.
 
-Ngoài mười hai ca trên, mỗi bug đã sửa có một ca hồi quy riêng, liệt kê ở cuối `test-list.md` và không tính vào con số 12. Hiện có TC-13 cho BUG-02 và TC-14 cho BUG-03.
+Ngoài mười hai ca trên, mỗi bug đã sửa có một ca canh lại và không tính vào con số 12: TC-13 cho BUG-02 và TC-14 cho BUG-03, cả hai ở `tests/device-validator.test.ts`; TC-12 ở `tests/seed.test.ts` vừa là ca tái lập của bảng chính vừa canh BUG-04.
 
 ## 3. Tiêu chí thành công
 
