@@ -33,6 +33,7 @@
 | **DeepSeek** | Thiết kế CI đơn giản | .github/ci.yaml | Kiểm tra CI hoạt động chính xác, syntax đúng và dễ hiểu |
 | **DeepSeek** | Package ứng dụng vào docker build | Dockerfile | Đọc và kiểm tra ứng dụng hoạt động chính xác |
 | **DeepSeek** | Reformat lại các file md của bài tập 3 | bug-log.md ; test-plan.md | Đọc và kiểm chứng lại so với bản thảo chưa format |
+| **DeepSeek** | Kiểm tra và cải thiện các test | seed.test.ts ; database.test.ts | Kiểm tra rằng các test thực hiện đúng với mục tiêu, đồng thời kiểm tra không có side effect |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
