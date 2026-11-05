@@ -32,6 +32,8 @@ Kỹ thuật chọn dữ liệu:
 
 Đủ năm loại BT3: luồng đúng 7 · biên 2 · dữ liệu sai 2, trong đó một ca là ca bảo mật · tái lập 1. Tổng 12.
 
+Ngoài mười hai ca trên, mỗi bug đã sửa có một ca hồi quy riêng, liệt kê ở cuối `test-list.md` và không tính vào con số 12. Hiện có TC-13 cho BUG-02 và TC-14 cho BUG-03.
+
 ## 3. Tiêu chí thành công
 
 Đặt trước khi chạy, không sửa sau khi có kết quả.
@@ -45,6 +47,6 @@ Kỹ thuật chọn dữ liệu:
 
 - Node.js 26, pnpm 11, PostgreSQL 16 chạy bằng `docker compose up -d db`, `DATABASE_URL` đặt trong `.env`.
 - Tạo lược đồ và nạp dữ liệu: `pnpm run db:init` rồi `pnpm run db:seed`. Seed tạo 6 nhóm sự cố, 2 tài khoản gồm một `NHAN_VIEN` và một `QUAN_LY` cùng trung tâm `TT01`, 1 khách và 3 thiết bị.
-- Chạy bộ test: `pnpm run test`. Bảy ca đầu không cần cơ sở dữ liệu.
-- Năm ca cuối cần PostgreSQL. Khi máy chưa có `DATABASE_URL`, chúng tự bỏ qua để bộ test vẫn chạy được trên máy chưa dựng cơ sở dữ liệu; muốn có kết quả thật cho năm ca đó thì phải dựng cơ sở dữ liệu trước.
+- Chạy bộ test: `pnpm run test`. Tám ca đầu không cần cơ sở dữ liệu.
+- Bốn ca cuối cần PostgreSQL. Khi máy chưa có `DATABASE_URL`, chúng tự bỏ qua để bộ test vẫn chạy được trên máy chưa dựng cơ sở dữ liệu; muốn có kết quả thật cho bốn ca đó thì phải dựng cơ sở dữ liệu trước.
 - Dọn dẹp: mỗi ca cần cơ sở dữ liệu xoá `ticket_status_log`, `ticket`, `device` và `customer` trước khi chạy, để không phụ thuộc dữ liệu còn lại từ ca trước.
