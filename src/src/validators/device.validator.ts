@@ -1,4 +1,5 @@
 import { AppError } from '#errors/app-error';
+import { toVietnamIso } from '#lib/due-date';
 
 import { readText } from './common';
 
@@ -40,7 +41,10 @@ export function validateDeviceInput(body: Record<string, unknown>): DeviceInput 
 
   const rawPurchaseDate = body.purchase_date ?? null;
   const purchaseDate = typeof rawPurchaseDate === 'string' ? rawPurchaseDate : null;
-  if (purchaseDate !== null && purchaseDate > new Date().toISOString().slice(0, 10)) {
+
+  // So voi ngay Viet Nam chu khong phai ngay UTC. toISOString tra gio UTC, nen tu 00:00
+  // den 06:59 gio Viet Nam no van la ngay hom qua, va hom nay se bi tu choi sai.
+  if (purchaseDate !== null && purchaseDate > toVietnamIso(new Date()).slice(0, 10)) {
     throw new AppError('VALIDATION_FAILED', 'Ngày mua không hợp lệ', {
       purchase_date: 'Không được sau ngày hiện tại',
     });
