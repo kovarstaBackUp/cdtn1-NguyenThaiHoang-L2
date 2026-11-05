@@ -52,7 +52,10 @@ const categories = [
 
 let pendingSeed: Promise<void> | undefined;
 
-async function runSeed(): Promise<void> {
+// Xuat ham nay ra de test goi lai duoc nhieu lan. `seed()` ben duoi chi chay mot lan
+// cho moi tien trinh, vi no giu lai promise de nhieu noi goi cung luc khong seed chong
+// len nhau. Muon kiem chuyen "chay seed lan hai khong nhan doi" thi phai goi ham nay.
+export async function runSeed(): Promise<void> {
   await connectDatabase();
 
   const customer = await db.orm.public.Customer.upsert({
