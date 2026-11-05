@@ -2,9 +2,11 @@
 
 Bốn bug, mỗi bug đủ bảy dòng theo đề bài BT3. Cả bốn đã sửa và đã chạy lại test để xác nhận. Mức độ xếp theo đúng ba tiêu chí của đề: Critical là hệ thống không dùng được, dữ liệu bị sai, hoặc có lỗ hổng bảo mật; Major là một chức năng quan trọng sai nhưng còn cách làm khác; Minor là sai sót không ảnh hưởng luồng chính.
 
+Mỗi dòng thứ bảy mang **hai** link: commit chứa lỗi và commit sửa lỗi. Mở hai commit cạnh nhau là thấy đúng phần thay đổi, không phải tin vào lời mô tả. Commit chứa lỗi tìm bằng cách lần theo lịch sử của tệp, chọn commit đầu tiên đưa đoạn mã sai vào, chứ không phải commit sửa.
+
 ## Chuẩn bị chung
 
-Ba bug dưới đây tái lập trên một cơ sở dữ liệu trống, để mã phiếu và mã bản ghi có giá trị xác định.
+Bốn bug dưới đây tái lập trên một cơ sở dữ liệu trống, để mã phiếu và mã bản ghi có giá trị xác định.
 
 1. `docker compose up -d db`
 2. `pnpm run db:init` rồi `pnpm run db:seed`
@@ -42,7 +44,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
    - **Quan sát:** chạy `SELECT count(*) FROM ticket_status_log WHERE ticket_id = 1;` trên cùng cơ sở dữ liệu. Trước khi sửa, lần nào cũng **0**, vì đường ghi nhật ký lúc tạo phiếu không hề tồn tại trong mã. Sau khi sửa ra **1**, với `from_status` rỗng và `to_status` là `MOI`.
 5. **Nguyên nhân:** `log.repository.ts` có hàm `insertStatusChange` nhưng `ticket.service.create` không gọi. Chú thích trong repository giải thích rằng chưa endpoint nào đổi trạng thái nên chưa cần, nhưng đã gộp hai việc khác nhau: **đổi trạng thái** và **dòng đầu tiên lúc tạo phiếu**. SRS BR-07 yêu cầu cả hai, và dòng đầu tiên phải ghi ngay khi tạo.
 6. **Cách sửa:** gọi `tx.logs.insertStatusChange` ngay sau `tx.tickets.create`, trong cùng giao dịch đã có sẵn, với `from_status` rỗng, `to_status` là `MOI` và `changed_by` là nhân viên đang đăng nhập. Nhờ vậy hoặc cả hai cùng ghi, hoặc cả hai cùng quay lui.
-7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/905a1e3 - chạy lại TC-07 thì PASS, và toàn bộ bộ test 10/10 PASS. Thêm TC-07 làm ca hồi quy.
+7. **Commit và xác nhận:** bản chứa lỗi https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/686f394, bản sửa https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/905a1e3 - mở hai commit cạnh nhau sẽ thấy `create` không có lời gọi ghi nhật ký, rồi có. Chạy lại TC-07 thì PASS, và ca đó nay nằm trong bộ test 14/14 PASS.
 
 ## BUG-02 - Ngày mua bị so với ngày UTC thay vì ngày Việt Nam
 
@@ -60,7 +62,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
    - **Theo giao diện thì hiện không tái lập được**, và đây là điều đáng ghi riêng: màn hình `/taoPhieuBaoHanh` chỉ cho chọn thiết bị đã có trong danh sách, ba ô `IMEI / Serial`, `Ghi Chu Nguon Goc` và `Ngay Mua` đều để `readonly`, nên không có đường đăng ký thiết bị mới bằng giao diện. Đường duy nhất hiện nay là gọi thẳng `POST /api/devices`.
 5. **Nguyên nhân:** biểu thức `new Date().toISOString().slice(0, 10)` lấy ngày theo **UTC**, trong khi toàn bộ nghiệp vụ tính theo giờ Việt Nam. Việt Nam là UTC+7, nên trong bảy giờ đầu của mỗi ngày, ngày UTC vẫn là hôm qua và "hôm nay" bị coi là tương lai.
 6. **Cách sửa:** so với `toVietnamIso(new Date()).slice(0, 10)`, hàm đã có sẵn trong `#lib/due-date` và đang được dùng cho `received_at` và `due_date`. Kèm một chú thích ngay tại chỗ để lỗi không bị đưa trở lại.
-7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/40e51f1 - chạy lại TC-13 thì PASS, toàn bộ bộ test 10/10 PASS. Thêm TC-13 làm ca hồi quy.
+7. **Commit và xác nhận:** bản chứa lỗi https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/a96d70a, bản sửa https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/40e51f1 - mở hai commit cạnh nhau sẽ thấy dòng so sánh đổi từ `toISOString` sang `toVietnamIso`. Chạy lại TC-13 thì PASS, và ca đó nay nằm trong bộ test 14/14 PASS.
 
 ## BUG-03 - Ngày mua không được kiểm định dạng nên dữ liệu sai lọt qua tầng kiểm tra
 
@@ -78,7 +80,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
    - **Theo giao diện thì không tái lập được**, cùng lý do như BUG-02: màn hình lập phiếu không có ô nhập thiết bị mới.
 5. **Nguyên nhân:** chỉ có phép so sánh chuỗi với ngày hôm nay, không kiểm định dạng và không kiểm ngày có thật. Phép so chuỗi vô tình chặn được vài giá trị như `"abc"`, vì `'a'` lớn hơn `'2'`, nên lỗi bị che một phần và chỉ lộ ra với những chuỗi bắt đầu bằng chữ số nhỏ hơn `'2'`, đúng như `"10/02/2026"` và `"2026-02-30"`.
 6. **Cách sửa:** thêm hàm `laNgayHopLe`, kiểm định dạng bằng `/^\d{4}-\d{2}-\d{2}$/` rồi so vòng tròn với `toISOString` để loại ngày không có thật. Nhân tiện, chuỗi rỗng được coi là `null`, đúng như hợp đồng nói "thiếu thì để null".
-7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/2937d58 - chạy lại TC-14 thì PASS, toàn bộ bộ test 10/10 PASS. Thêm TC-14 làm ca hồi quy.
+7. **Commit và xác nhận:** bản chứa lỗi https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/a96d70a, bản sửa https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/2937d58 - cùng một commit sinh ra cả BUG-02 và BUG-03, vì nó thêm phần kiểm tra `purchase_date` vừa sai múi giờ vừa thiếu kiểm định dạng. Chạy lại TC-14 thì PASS, và ca đó nay nằm trong bộ test 14/14 PASS.
 
 ## BUG-04 - Tên nhóm sự cố trong dữ liệu mẫu không khớp với hợp đồng API
 
@@ -88,7 +90,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 4. **Cách tái lập:** chạy `pnpm run db:seed` trên database trống, rồi mở `/taoPhieuBaoHanh` hoặc gọi `GET /api/issue-categories`. Trước khi sửa, cả sáu tên đều không dấu. Lần nào cũng vậy vì tên nằm thẳng trong `seed.ts`, không đến từ đâu khác.
 5. **Nguyên nhân:** dữ liệu mẫu được viết bằng chữ không dấu cho tiện gõ, nhưng không được đối chiếu lại với bảng thuật ngữ ở mục 1.4 của SRS, nơi tên nhóm đã chốt là có dấu.
 6. **Cách sửa:** đổi sáu tên trong mảng `categories` của `seed.ts` sang đúng tên trong SRS. Vì seed upsert theo `category_name`, tên cũ sẽ thành sáu dòng mới chứ không bị ghi đè, nên phải xoá sạch cả hai database rồi seed lại.
-7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/a6040ad - chạy lại TC-12 thì PASS, toàn bộ bộ test 14/14 PASS. TC-12 nay khẳng định luôn sáu tên nhóm đúng như đặc tả, nên lỗi này không quay lại được.
+7. **Commit và xác nhận:** bản chứa lỗi https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/365f6e6, bản sửa https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/a6040ad - mở hai commit cạnh nhau sẽ thấy sáu tên nhóm đổi từ không dấu sang có dấu. Chạy lại TC-12 thì PASS, và TC-12 nay khẳng định luôn sáu tên đúng như đặc tả nên lỗi này không quay lại được.
 
 ## Ghi chú về commit của BUG-01
 
