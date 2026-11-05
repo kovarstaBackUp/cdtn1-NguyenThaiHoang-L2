@@ -1,0 +1,77 @@
+# CI cho du an Smart CRM Mekong Mobile.
+#
+# Bon ca TC-09 den TC-12 can PostgreSQL that, nen workflow nay dung mot service
+# container thay vi co gang chay test tren may khong co co so du lieu.
+# Database test duoc tao rieng de bo test khong cham vao capstoneone, dung nhu
+# cach lam o may khi phat trien.
+
+name: CI
+
+on:
+  push:
+    branches: [main, testing]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Kiểm thử và build
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: capstoneone
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d capstoneone"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/capstoneone
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/capstoneone_test
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+
+      - name: Cài Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: src/pnpm-lock.yaml
+
+      - name: Cài phụ thuộc
+        working-directory: src
+        run: pnpm install --frozen-lockfile
+
+      - name: Tạo database test
+        run: psql "$DATABASE_URL" -c "CREATE DATABASE capstoneone_test"
+
+      - name: Áp lược đồ và nạp dữ liệu cho cả hai database
+        working-directory: src
+        run: |
+          pnpm run db:init
+          pnpm run db:seed
+          DATABASE_URL="$TEST_DATABASE_URL" pnpm run db:init
+          DATABASE_URL="$TEST_DATABASE_URL" pnpm run db:seed
+
+      - name: Chạy bộ test
+        working-directory: src
+        run: pnpm run test
+
+      - name: Kiểm tra build
+        working-directory: src
+        run: pnpm run build
