@@ -29,6 +29,12 @@ test('TC-12 chay seed lan thu hai khong nhan doi du lieu (tinh tai lap)', async 
   expect(danhMucLanHai).toHaveLength(danhMucLanMot.length);
   expect(danhMucLanHai).toHaveLength(6);
 
+  // BUG-04: ten nhom su co phai dung nhu hop dong API va SRS, tuc co dau.
+  // Sap xep hai ben truoc khi so sanh vi thu tu tra ve khong duoc bao dam.
+  const tenThucTe = danhMucLanHai.map((muc) => muc.categoryName).sort();
+  const tenMongDoi = ['Màn hình', 'Pin', 'Sạc', 'Phần mềm', 'Nước vào', 'Khác'].sort();
+  expect(tenThucTe).toEqual(tenMongDoi);
+
   expect(thietBiLanHai).toHaveLength(thietBiLanMot.length);
   expect(thietBiLanHai).toHaveLength(3);
 

@@ -1,6 +1,6 @@
 # Bug Log - Luồng L2: Tiếp nhận và phân loại yêu cầu bảo hành (track SE)
 
-Ba bug, mỗi bug đủ bảy dòng theo đề bài BT3. Cả ba đã sửa và đã chạy lại test để xác nhận. Mức độ xếp theo đúng ba tiêu chí của đề: Critical là hệ thống không dùng được, dữ liệu bị sai, hoặc có lỗ hổng bảo mật; Major là một chức năng quan trọng sai nhưng còn cách làm khác.
+Bốn bug, mỗi bug đủ bảy dòng theo đề bài BT3. Cả bốn đã sửa và đã chạy lại test để xác nhận. Mức độ xếp theo đúng ba tiêu chí của đề: Critical là hệ thống không dùng được, dữ liệu bị sai, hoặc có lỗ hổng bảo mật; Major là một chức năng quan trọng sai nhưng còn cách làm khác; Minor là sai sót không ảnh hưởng luồng chính.
 
 ## Chuẩn bị chung
 
@@ -79,6 +79,16 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 5. **Nguyên nhân:** chỉ có phép so sánh chuỗi với ngày hôm nay, không kiểm định dạng và không kiểm ngày có thật. Phép so chuỗi vô tình chặn được vài giá trị như `"abc"`, vì `'a'` lớn hơn `'2'`, nên lỗi bị che một phần và chỉ lộ ra với những chuỗi bắt đầu bằng chữ số nhỏ hơn `'2'`, đúng như `"10/02/2026"` và `"2026-02-30"`.
 6. **Cách sửa:** thêm hàm `laNgayHopLe`, kiểm định dạng bằng `/^\d{4}-\d{2}-\d{2}$/` rồi so vòng tròn với `toISOString` để loại ngày không có thật. Nhân tiện, chuỗi rỗng được coi là `null`, đúng như hợp đồng nói "thiếu thì để null".
 7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/2937d58 - chạy lại TC-14 thì PASS, toàn bộ bộ test 10/10 PASS. Thêm TC-14 làm ca hồi quy.
+
+## BUG-04 - Tên nhóm sự cố trong dữ liệu mẫu không khớp với hợp đồng API
+
+1. **Mã và mức độ:** BUG-04, MINOR, vì không làm hỏng luồng nào, nhưng dữ liệu hiển thị cho nhân viên khác với tài liệu đặc tả.
+2. **Phát hiện bởi:** rà soát mã nguồn, khi so `src/prisma/seed.ts` với mục 1.4 của SRS và ví dụ phản hồi ở mục 4.4 của hợp đồng API.
+3. **Triệu chứng:** sáu nhóm sự cố hiện ra là `Man hinh`, `Sac`, `Phan mem`, `Nuoc vao`, `Khac`, không dấu, trong khi SRS và hợp đồng API ghi `Màn hình`, `Sạc`, `Phần mềm`, `Nước vào`, `Khác`, có dấu. Nhân viên thấy chữ không dấu trên màn hình lập phiếu, và ví dụ trong hợp đồng không tái lập được trên dữ liệu thật.
+4. **Cách tái lập:** chạy `pnpm run db:seed` trên database trống, rồi mở `/taoPhieuBaoHanh` hoặc gọi `GET /api/issue-categories`. Trước khi sửa, cả sáu tên đều không dấu. Lần nào cũng vậy vì tên nằm thẳng trong `seed.ts`, không đến từ đâu khác.
+5. **Nguyên nhân:** dữ liệu mẫu được viết bằng chữ không dấu cho tiện gõ, nhưng không được đối chiếu lại với bảng thuật ngữ ở mục 1.4 của SRS, nơi tên nhóm đã chốt là có dấu.
+6. **Cách sửa:** đổi sáu tên trong mảng `categories` của `seed.ts` sang đúng tên trong SRS. Vì seed upsert theo `category_name`, tên cũ sẽ thành sáu dòng mới chứ không bị ghi đè, nên phải xoá sạch cả hai database rồi seed lại.
+7. **Commit và xác nhận:** https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2/commit/a6040ad - chạy lại TC-12 thì PASS, toàn bộ bộ test 14/14 PASS. TC-12 nay khẳng định luôn sáu tên nhóm đúng như đặc tả, nên lỗi này không quay lại được.
 
 ## Ghi chú về commit của BUG-01
 
