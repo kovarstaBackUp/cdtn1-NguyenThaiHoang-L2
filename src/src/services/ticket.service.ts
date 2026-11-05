@@ -76,7 +76,7 @@ export function createTicketService(uow: UnitOfWork = unitOfWork) {
         const sequence = lastCode ? Number(lastCode.slice(3, 9)) + 1 : 1;
         const ticketCode = `BH-${String(sequence).padStart(6, '0')}/${year}`;
 
-        return tx.tickets.create({
+        const ticket = await tx.tickets.create({
           ticketCode,
           customerId,
           deviceId,
@@ -89,6 +89,18 @@ export function createTicketService(uow: UnitOfWork = unitOfWork) {
           receivedAt: receivedAtIso,
           dueDate: toVietnamIso(dueDate),
         });
+
+        // BR-07: tao phieu thi phai ghi ngay dong nhat ky dau tien,
+        // trong cung giao dich, de khong bao gio co phieu ma thieu nhat ky.
+        await tx.logs.insertStatusChange({
+          ticketId: ticket.ticketId,
+          fromStatus: null,
+          toStatus: STATUS_MOI,
+          changedBy: actor.employeeId,
+          note: null,
+        });
+
+        return ticket;
       });
 
       if (!created) {
