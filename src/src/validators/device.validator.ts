@@ -7,6 +7,17 @@ const DEFAULT_WARRANTY_MONTHS = 12;
 const MIN_WARRANTY_MONTHS = 1;
 const MAX_WARRANTY_MONTHS = 120;
 
+const LA_NGAY_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+// Kiem ca dinh dang lan ngay co that, de "2026-02-30" khong lot xuong co so du lieu.
+function laNgayHopLe(giaTri: string): boolean {
+  if (!LA_NGAY_ISO.test(giaTri)) return false;
+
+  const moc = new Date(`${giaTri}T00:00:00Z`);
+
+  return !Number.isNaN(moc.getTime()) && moc.toISOString().slice(0, 10) === giaTri;
+}
+
 export type DeviceInput = {
   customerId: number;
   serialNo: string;
@@ -40,7 +51,16 @@ export function validateDeviceInput(body: Record<string, unknown>): DeviceInput 
   }
 
   const rawPurchaseDate = body.purchase_date ?? null;
-  const purchaseDate = typeof rawPurchaseDate === 'string' ? rawPurchaseDate : null;
+  let purchaseDate: string | null = null;
+  if (typeof rawPurchaseDate === 'string' && rawPurchaseDate.trim() !== '') {
+    purchaseDate = rawPurchaseDate.trim();
+  }
+
+  if (purchaseDate !== null && !laNgayHopLe(purchaseDate)) {
+    throw new AppError('VALIDATION_FAILED', 'Ngày mua không hợp lệ', {
+      purchase_date: 'Phải là ngày có thật, dạng YYYY-MM-DD',
+    });
+  }
 
   // So voi ngay Viet Nam chu khong phai ngay UTC. toISOString tra gio UTC, nen tu 00:00
   // den 06:59 gio Viet Nam no van la ngay hom qua, va hom nay se bi tu choi sai.
