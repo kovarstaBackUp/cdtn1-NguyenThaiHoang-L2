@@ -3,10 +3,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts'],
-    // src/prisma/db.ts tao client ngay khi tep duoc nap, va can DATABASE_URL de khong nem loi.
-    // Cac ca unit khong truy van gi nen khong mo ket noi nao.
-    env: {
-      DATABASE_URL: 'postgres://postgres:postgres@127.0.0.1:5432/capstoneone',
-    },
+    // Tro test sang database rieng, dat trong tests/helpers/setup-env.ts.
+    // Nap truoc moi tep test de db.ts doc duoc DATABASE_URL dung luc nap module.
+    setupFiles: ['tests/helpers/setup-env.ts'],
   },
 });
