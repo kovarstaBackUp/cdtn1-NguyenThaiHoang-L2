@@ -19,7 +19,7 @@ Dữ liệu có sẵn sau khi seed, dùng trực tiếp trong các bước bên 
 | Thiết bị 1 | `device_id` 1, `SN-IP14-000123`, mua 2024-03-15, bảo hành 12 tháng, không mua ngoài |
 | Thiết bị 2 | `device_id` 2, `SN-SS-S24-000456`, mua ngoài, không có ngày mua, bảo hành 6 tháng |
 | Thiết bị 3 | `device_id` 3, `SN-XM-13-000789`, mua ngoài, đã đánh dấu ẩn |
-| Nhóm sự cố | 1 Man hinh, 2 Pin, 3 Sac, 4 Phan mem, 5 Nuoc vao, 6 Khac |
+| Nhóm sự cố | 1 Màn hình, 2 Pin, 3 Sạc, 4 Phần mềm, 5 Nước vào, 6 Khác |
 | Tài khoản | nhân viên `employee_id` 1, quản lý `employee_id` 2, cùng trung tâm `TT01` |
 
 Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API bằng Postman hoặc curl. Token chính là base64 của `{"employee_id","role","center_code"}`, đúng như `src/lib/server/session.ts` mô tả.
@@ -33,7 +33,7 @@ Hai token dưới đây dán thẳng vào header `Authorization` khi gọi API b
 2. **Phát hiện bởi:** rà soát mã nguồn luồng lập phiếu. Ca TC-07 được viết sau đó để canh lỗi này quay lại.
 3. **Triệu chứng:** lập phiếu thành công nhưng bảng `ticket_status_log` vẫn rỗng. Không dựng lại được vòng đời phiếu, nên câu hỏi "phiếu này ở trạng thái Đang xử lý bao lâu" không trả lời được, đúng lý do mà tài liệu buổi 5 dùng để bắt buộc có bảng lịch sử.
 4. **Cách tái lập:** hai đường, cả hai quan sát bằng cùng một câu SQL.
-   - **Theo giao diện:** đăng nhập `employee` / `employee`. Vào `/traCuuKhachHang`, nhập `0900000001` rồi bấm nút tra cứu, thấy khách Nguyen Van A cùng ba thiết bị. Bấm nút sang màn hình lập phiếu, chọn dòng thiết bị `SN-IP14-000123`, gõ mô tả lỗi bất kỳ, chọn nhóm `Man hinh` và mức `Cao`, bấm nút `Tao Phieu`. Màn hình hiện "Da tao phieu BH-000001/2026".
+   - **Theo giao diện:** đăng nhập `employee` / `employee`. Vào `/traCuuKhachHang`, nhập `0900000001` rồi bấm nút tra cứu, thấy khách Nguyen Van A cùng ba thiết bị. Bấm nút sang màn hình lập phiếu, chọn dòng thiết bị `SN-IP14-000123`, gõ mô tả lỗi bất kỳ, chọn nhóm `Màn hình` và mức `Cao`, bấm nút `Tao Phieu`. Màn hình hiện "Da tao phieu BH-000001/2026".
    - **Theo Postman:** `POST http://localhost:5173/api/tickets`, header `Authorization` dán token nhân viên, header `Content-Type: application/json`, body:
      ```json
      { "customer_id": 1, "device_id": 1, "issue_desc": "Man hinh chop tat khi cam sac", "category_id": 1, "priority": "CAO" }

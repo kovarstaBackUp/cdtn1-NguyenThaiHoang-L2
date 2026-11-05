@@ -42,12 +42,12 @@ const employees = [
 ];
 
 const categories = [
-  { categoryName: 'Man hinh', defaultPriority: 'CAO' },
+  { categoryName: 'Màn hình', defaultPriority: 'CAO' },
   { categoryName: 'Pin', defaultPriority: 'TRUNG_BINH' },
-  { categoryName: 'Sac', defaultPriority: 'TRUNG_BINH' },
-  { categoryName: 'Phan mem', defaultPriority: 'THAP' },
-  { categoryName: 'Nuoc vao', defaultPriority: 'CAO' },
-  { categoryName: 'Khac', defaultPriority: 'THAP' },
+  { categoryName: 'Sạc', defaultPriority: 'TRUNG_BINH' },
+  { categoryName: 'Phần mềm', defaultPriority: 'THAP' },
+  { categoryName: 'Nước vào', defaultPriority: 'CAO' },
+  { categoryName: 'Khác', defaultPriority: 'THAP' },
 ];
 
 let pendingSeed: Promise<void> | undefined;
