@@ -4,7 +4,7 @@ Tệp này giữ danh sách test case. Tệp `test-plan.md` chỉ tóm tắt, kh
 
 Tám cột theo page 11 của tài liệu buổi 13. Mẫu `test-list-template.md` liệt kê bảy cột và ghi chú "thêm kết quả là tám", nhưng danh sách của mẫu đã có sẵn cột kết quả thực tế và thiếu cột PASS/FAIL, nên tôi thêm cột 8 cho đúng đề.
 
-Cột 7 và cột 8 của tám ca đầu đã điền bằng kết quả chạy thật ngày 05/11/2026: `pnpm run test`, 4 tệp, 10 ca, 10 PASS, thời gian 1,21 giây. Bốn ca cuối chưa chạy vì chưa dựng cơ sở dữ liệu. Hai ca hồi quy TC-13 và TC-14 nằm ở mục cuối tệp và không tính vào mười hai ca.
+Cột 7 và cột 8 của tám ca đầu đã điền bằng kết quả chạy thật ngày 05/11/2026: `pnpm run test`, 4 tệp, 10 ca, 10 PASS. Bốn ca cuối chưa chạy; database test `capstoneone_test` đã dựng xong và đã có lược đồ cùng dữ liệu seed, nhưng bốn ca đó chưa được viết. Hai ca hồi quy TC-13 và TC-14 nằm ở mục cuối tệp và không tính vào mười hai ca.
 
 | # | Mã | Tiền điều kiện | Các bước | Dữ liệu thử | Kết quả mong đợi | Mức ưu tiên | Kết quả thực tế | PASS/FAIL |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -19,11 +19,12 @@ Cột 7 và cột 8 của tám ca đầu đã điền bằng kết quả chạy 
 | 9 | TC-09 | Có phiếu chưa được duyệt, thuộc trung tâm `TT01` | Quản lý `TT01` gọi `decisionService.decide` với quyết định duyệt | `{ decision: "APPROVE" }` | đọc lại từ PostgreSQL thấy `is_warranty` bằng `true`, `verified_by` bằng mã quản lý, `verified_at` có giá trị | Cao, BR-14 | chưa chạy | |
 | 10 | TC-10 | Khách, thiết bị và nhóm sự cố đều hợp lệ | Gọi `POST /api/tickets` | cùng bộ dữ liệu như TC-07 | mã `201`, thân phản hồi có `ticket_code` và `due_date` | Cao, AC4.1 | chưa chạy | |
 | 11 | TC-11 | Phiếu thuộc trung tâm `TT01` | Gọi `PATCH /api/tickets/{ticket_id}/warranty-decision` bằng danh tính trung tâm `TT02` | `{ decision: "APPROVE" }` | mã `403`, mã lỗi `CENTER_OUT_OF_SCOPE`, và phiếu **không đổi** trong cơ sở dữ liệu | Cao, BR-17 | chưa chạy | |
-| 12 | TC-12 | Cơ sở dữ liệu đã có lược đồ và đã nạp dữ liệu một lần | Chạy `pnpm run db:init` rồi `pnpm run db:seed` lần thứ hai | không có | không lỗi, `issue_category` vẫn đúng 6 dòng và `employee` vẫn đúng 2 dòng | Trung bình, tính tái lập | chưa chạy | |
+| 12 | TC-12 | Database test đã có lược đồ và đã seed một lần | Gọi hàm `seed()` lần thứ hai trong cùng ca, vì đây là phần có thể sinh trùng | không có | không lỗi, `issue_category` vẫn đúng 6 dòng và `employee` vẫn đúng 2 dòng | Trung bình, tính tái lập | chưa chạy | |
 
 ## Ghi chú
 
-- TC-01 đến TC-08 không cần cơ sở dữ liệu và đã chạy thật, 8 ca đều PASS. TC-09 đến TC-12 cần PostgreSQL, chưa chạy, và sẽ tự bỏ qua khi máy chưa có cơ sở dữ liệu.
+- TC-01 đến TC-08 không cần cơ sở dữ liệu và đã chạy thật, 8 ca đều PASS. TC-09 đến TC-12 cần database test `capstoneone_test`, chưa chạy.
+- Test chạy trên `capstoneone_test` chứ không phải `capstoneone`, nhờ `tests/helpers/setup-env.ts` trỏ `DATABASE_URL` sang đó, nên không cần đổi `.env`. Mỗi ca tự tạo khách và thiết bị riêng với khóa sinh từ đồng hồ, vì repository không có hàm xoá nên không dọn bằng `TRUNCATE` được.
 - Năm loại BT3: luồng đúng gồm TC-01, TC-02, TC-04, TC-05, TC-07, TC-09, TC-10. Biên gồm TC-03 và TC-06 ở hai phía mốc 10 chữ số. Dữ liệu sai gồm TC-08 và TC-11. Bảo mật là TC-11. Tái lập là TC-12.
 - Cặp TC-03 và TC-06 là hai phía của cùng một ranh giới, đúng yêu cầu "hai test biên ở hai bên của cùng một ranh giới".
 - TC-07 là ca chứng minh BR-07: nếu bỏ dòng ghi nhật ký trong `ticket.service.ts` thì ca này đỏ, vì số dòng nhật ký tụt xuống 0.

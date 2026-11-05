@@ -143,9 +143,17 @@ pnpm run test          # chạy một lần
 pnpm run test:watch    # chế độ theo dõi
 ```
 
-`tests/` chứa các unit test chạy trên hàm thuần, không cần cơ sở dữ liệu: che số điện
-thoại (NFR2), chuẩn hoá số điện thoại (BR-03), và cách tính hạn cam kết (BR-10, kể cả
-việc bỏ qua Chủ nhật).
+`tests/` có mười ca. Tám ca đầu chạy trên hàm thuần và trên service với đối tượng giả,
+không cần cơ sở dữ liệu: che số điện thoại (NFR2), chuẩn hoá số điện thoại (BR-02),
+tính hạn cam kết (BR-09, BR-10, kể cả việc bỏ qua Chủ nhật), sinh mã phiếu và ghi nhật
+ký đầu tiên (BR-07, BR-08), chặn phiếu thứ hai trên cùng thiết bị (BR-06), và kiểm định
+dạng ngày mua (BUG-02, BUG-03). Bốn ca còn lại cần database test.
+
+Test chạy trên `capstoneone_test` chứ **không** chạm `capstoneone`: `tests/helpers/setup-env.ts`
+tự trỏ `DATABASE_URL` của tiến trình test sang database đó, nên không phải sửa `.env`.
+Database này do `docker/init/01-capstoneone-test.sql` tạo một lần khi volume còn trống, và
+dịch vụ `init` của compose áp lược đồ cùng seed cho nó. Mỗi ca tự tạo khách và thiết bị
+riêng với khóa sinh từ đồng hồ, nên chạy lại nhiều lần vẫn không đụng nhau.
 
 ## Màn hình
 
@@ -207,24 +215,6 @@ Mọi lỗi dùng chung một dạng:
 
 Không có mã `422`. Hết bảo hành không phải là lỗi: mọi phiếu đều được tạo ở trạng
 thái chờ duyệt.
-
-## Phân quyền
-
-Phần xác thực mới chỉ là stub. `src/hooks.server.ts` giải mã
-`Authorization: Bearer <base64 of {"employee_id","role","center_code"}>` thành
-`locals.employee`. Khi không có header và Vite đang ở chế độ dev, hệ thống dùng các
-biến `DEV_*`, nên có thể mở app trên trình duyệt mà không cần tạo token.
-
-**Kiểm tra vai trò đang được tắt có chủ đích để ai cũng dùng được mọi màn hình.**
-Hằng `AUTHORIZATION_ENFORCED` trong `src/services/access.ts` đang là `false`, khiến
-`requireReceptionist` và `requireManager` không làm gì. Đổi hằng đó thành `true` để
-khôi phục bảng phân quyền ở mục 3: nhân viên tiếp nhận có `POST /api/customers`,
-`POST /api/devices` và `POST /api/tickets`; chỉ Quản lý trung tâm được đọc hàng đợi
-hoặc quyết định phiếu.
-
-Giới hạn theo trung tâm (BR-17, QT-14) vẫn được áp dụng: người gọi chỉ thấy các
-phiếu có `center_code` trùng với token của mình. Mặc định khi dev là `TT01` và dữ
-liệu mẫu cũng nằm ở đó, nên bình thường bạn sẽ không thấy khác biệt.
 
 ## Phân quyền
 

@@ -45,8 +45,9 @@ Ngoài mười hai ca trên, mỗi bug đã sửa có một ca hồi quy riêng,
 
 ## 4. Môi trường và dữ liệu thử
 
-- Node.js 26, pnpm 11, PostgreSQL 16 chạy bằng `docker compose up -d db`, `DATABASE_URL` đặt trong `.env`.
-- Tạo lược đồ và nạp dữ liệu: `pnpm run db:init` rồi `pnpm run db:seed`. Seed tạo 6 nhóm sự cố, 2 tài khoản gồm một `NHAN_VIEN` và một `QUAN_LY` cùng trung tâm `TT01`, 1 khách và 3 thiết bị.
-- Chạy bộ test: `pnpm run test`. Tám ca đầu không cần cơ sở dữ liệu.
-- Bốn ca cuối cần PostgreSQL. Khi máy chưa có `DATABASE_URL`, chúng tự bỏ qua để bộ test vẫn chạy được trên máy chưa dựng cơ sở dữ liệu; muốn có kết quả thật cho bốn ca đó thì phải dựng cơ sở dữ liệu trước.
-- Dọn dẹp: mỗi ca cần cơ sở dữ liệu xoá `ticket_status_log`, `ticket`, `device` và `customer` trước khi chạy, để không phụ thuộc dữ liệu còn lại từ ca trước.
+- Node.js 26, pnpm 11, PostgreSQL 16 dựng bằng `docker compose up -d --build`. Dịch vụ `init` của compose áp lược đồ và nạp dữ liệu cho **hai** database.
+- Database của ứng dụng là `capstoneone`, dùng khi chạy `pnpm run dev`. Database của kiểm thử là `capstoneone_test`, tạo một lần bởi `docker/init/01-capstoneone-test.sql` khi volume còn trống, nên không có bước tạo tay nào.
+- `tests/helpers/setup-env.ts` trỏ `DATABASE_URL` của tiến trình test sang `capstoneone_test`, nên test không bao giờ chạm database ứng dụng và không cần sửa `.env`. Muốn đổi database thử thì đặt `TEST_DATABASE_URL`.
+- Dữ liệu thử: seed có sẵn 6 nhóm sự cố, 2 tài khoản cùng trung tâm `TT01`, 1 khách và 3 thiết bị.
+- Cô lập giữa các ca: mỗi ca tự tạo khách và thiết bị riêng, với số điện thoại và serial sinh từ đồng hồ, nên chạy lại nhiều lần hay đổi thứ tự chạy đều không đụng nhau. Không dùng `TRUNCATE` vì repository của dự án chỉ có đọc và ghi, còn runtime Prisma không lộ truy vấn thô.
+- Lệnh chạy: `pnpm run test`. Tám ca đầu không cần cơ sở dữ liệu; bốn ca cuối cần database test đã dựng.
