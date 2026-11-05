@@ -1,7 +1,7 @@
 # BẢNG KHAI BÁO SỬ DỤNG CÔNG CỤ AI HỖ TRỢ
 **Học phần:** Chuyên đề Tốt nghiệp 1 (Specialized Graduation Topic I)
 **Học kỳ:** HK1, Năm học 2026 – 2027
-**Bài nộp:** [x] Bài tập 1 (BT1)   [ ] Bài tập 2 (BT2)   [ ] Bài tập 3 (BT3)
+**Bài nộp:** [ ] Bài tập 1 (BT1)   [ ] Bài tập 2 (BT2)   [ x ] Bài tập 3 (BT3)
 
 ---
 
@@ -30,6 +30,9 @@
 | **DeepSeek** | Chỉnh đốn lại CSS Styling  | /src/src/lib/app.css | Kiểm tra trang hoạt động chính xác và hiển thị đúng |
 | **DeepSeek** | Tạo nên README.md | README.md | Kiểm chứng lại README và lập lại môi trường từ chính nó |
 | **DeepSeek** | Áp dụng base64 session check vào ứng dụng |  src/src/lib/server/session.ts, src/src/routes/(app)/+layout.server.ts, src/src/routes/+page.server.ts, src/src/routes/login, src/src/routes/logout/ | Đọc và kiểm chứng lại các dòng code, đồng thời kiểm tra ứng dụng hoạt động ổn định |
+| **DeepSeek** | Thiết kế CI đơn giản | .github/ci.yaml | Kiểm tra CI hoạt động chính xác, syntax đúng và dễ hiểu |
+| **DeepSeek** | Package ứng dụng vào docker build | Dockerfile | Đọc và kiểm tra ứng dụng hoạt động chính xác |
+| **DeepSeek** | Reformat lại các file md của bài tập 3 | bug-log.md ; test-plan.md | Đọc và kiểm chứng lại so với bản thảo chưa format |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
@@ -41,4 +44,4 @@
 > **"Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung nộp."**
 
 * **Chữ ký / Họ tên sinh viên:** Nguyễn Thái Hoàng
-* **Ngày khai báo:** 08/10/2026
+* **Ngày khai báo:** 5/11/2026
