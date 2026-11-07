@@ -39,3 +39,20 @@ tái lập 1. Mã quy tắc nghiệp vụ ghi ở cột kết quả mong đợi.
   chỉ chạy một lần mỗi tiến trình.
 - Mọi ca chạy trên `capstoneone_test`, không chạm `capstoneone`, nhờ
   `tests/helpers/setup-env.ts` trỏ `DATABASE_URL` sang database test.
+
+## Ảnh chụp kết quả
+
+Nằm trong `docs/screenshots/`.
+
+| Tệp | Nội dung |
+| :--- | :--- |
+| `result.png` | Terminal của lần chạy `pnpm run test`: 6 tệp, 14 ca, 14 PASS |
+| `01-dang-nhap.png` | Màn hình đăng nhập |
+| `02-tra-cuu-khach-hang.png` | Tra cứu số `0900000001`, thấy khách Nguyen Van A và ba thiết bị, số điện thoại đã che |
+| `03-tao-phieu-bao-hanh.png` | Chọn thiết bị `SN-IP14-000123`, nhóm Màn hình, mức ưu tiên tự điền Cao, hạn cam kết hiện trước khi tạo |
+| `04-tao-phieu-thanh-cong.png` | Sau khi bấm Tạo Phiếu: mã phiếu và hạn cam kết |
+| `05-duyet-phieu-bao-hanh.png` | Hàng đợi duyệt của quản lý, phiếu vừa tạo nằm ở bảng Chưa Quá Hạn, khung chi tiết đã mở |
+
+Năm ảnh đầu chụp từ ứng dụng đang chạy bằng Chrome điều khiển qua CDP, không phải ảnh
+dàn dựng. Dữ liệu trong ảnh là dữ liệu seed thật: khách `0900000001`, ba thiết bị, sáu
+nhóm sự cố có dấu.
