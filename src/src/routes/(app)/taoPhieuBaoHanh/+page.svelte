@@ -1,7 +1,7 @@
 <script lang="ts">
     import "#lib/app.css";
     import type { PageProps } from "./$types";
-
+    import { onMount } from "svelte";
     import {
         calculateDueDate,
         isPriority,
@@ -13,6 +13,7 @@
     let { data }: PageProps = $props();
 
     let selectedDeviceId = $state<number | null>(null);
+    let loading = $state<boolean>(false);
 
     const devices = $derived(data.customer?.devices ?? []);
     const selectedDevice = $derived(
@@ -57,13 +58,22 @@
               ? toVietnamDdMmYy(dueDateIso)
               : "dd/mm/yy",
     );
+    const simulatedLoad = (ms: Number): Promise<void> =>
+        new Promise((resolve) => setTimeout(resolve, ms));
+
+    onMount(async () => {
+        loading = true;
+        await simulatedLoad(5000).then(() => {
+            loading = false;
+        });
+    });
 
     async function submitTicket() {
         if (!data.customer) return;
 
         submitting = true;
         errorMessage = null;
-
+        loading = true;
         try {
             const res = await fetch("/api/tickets", {
                 method: "POST",
@@ -80,7 +90,8 @@
             const payload = await res.json().catch(() => null);
 
             if (!res.ok) {
-                errorMessage = payload?.error?.message ?? "Khong tao duoc phieu";
+                errorMessage =
+                    payload?.error?.message ?? "Khong tao duoc phieu";
                 return;
             }
 
@@ -89,161 +100,166 @@
             errorMessage = "Khong ket noi duoc toi may chu";
         } finally {
             submitting = false;
+            loading = false;
         }
     }
 </script>
 
 <div class="title">Tao Phieu Bao Hanh</div>
-<!-- Khach Hang -->
-<div class="thongTinKhachHang flex gap-1">
-    <p>Ten: {data.customer?.full_name ?? "-"}</p>
-    <p>SDT: {data.customer?.phone_masked ?? "-"}</p>
-</div>
 
-<!-- Thiet Bi -->
-<div class="phone flex flex-col gap-1">
-    <div class="deviceListDisplay">
-        {#if devices.length === 0}
-            <p>Chua co thiet bi</p>
-        {:else}
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Serial</th>
-                        <th>Mua Ngoai</th>
-                        <th>Ngay Mua</th>
-                        <th>Bao Hanh</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each devices as device (device.device_id)}
+{#if loading === true}
+    <div>DANG TAI VUI LONG DOI</div>
+{:else if loading === false}
+    <!-- Khach Hang -->
+    <div class="thongTinKhachHang flex gap-1">
+        <p>Ten: {data.customer?.full_name ?? "-"}</p>
+        <p>SDT: {data.customer?.phone_masked ?? "-"}</p>
+    </div>
+
+    <!-- Thiet Bi -->
+    <div class="phone flex flex-col gap-1">
+        <div class="deviceListDisplay">
+            {#if devices.length === 0}
+                <p>Chua co thiet bi</p>
+            {:else}
+                <table>
+                    <thead>
                         <tr>
-                            <td>
-                                <input
-                                    type="radio"
-                                    name="device"
-                                    value={device.device_id}
-                                    bind:group={selectedDeviceId}
-                                />
-                            </td>
-                            <td>{device.serial_no}</td>
-                            <td>{device.is_external ? "Co" : "Khong"}</td>
-                            <td>{device.purchase_date ?? "-"}</td>
-                            <td>{device.warranty_months} thang</td>
+                            <th></th>
+                            <th>Serial</th>
+                            <th>Mua Ngoai</th>
+                            <th>Ngay Mua</th>
+                            <th>Bao Hanh</th>
                         </tr>
-                    {/each}
-                </tbody>
-            </table>
-        {/if}
+                    </thead>
+                    <tbody>
+                        {#each devices as device (device.device_id)}
+                            <tr>
+                                <td>
+                                    <input
+                                        type="radio"
+                                        name="device"
+                                        value={device.device_id}
+                                        bind:group={selectedDeviceId}
+                                    />
+                                </td>
+                                <td>{device.serial_no}</td>
+                                <td>{device.is_external ? "Co" : "Khong"}</td>
+                                <td>{device.purchase_date ?? "-"}</td>
+                                <td>{device.warranty_months} thang</td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            {/if}
+        </div>
+        <div class="flex gap-1">
+            <p>IMEI / Serial</p>
+            <input
+                class="border border-b-black"
+                type="text"
+                value={serialNo}
+                readonly
+            />
+        </div>
+
+        <div class="flex gap-1">
+            <p>Ghi Chu Nguon Goc</p>
+            <input
+                class="border border-b-black"
+                type="text"
+                value={originNote}
+                readonly
+            />
+        </div>
+        <div class="flex gap-1">
+            <p>Ngay Mua</p>
+            <input
+                class="border border-b-black"
+                type="date"
+                value={purchaseDate}
+                readonly
+            />
+        </div>
     </div>
-    <div class="flex gap-1">
-        <p>IMEI / Serial</p>
-        <input
+
+    <!-- Noi Dung Tiep Nhan  -->
+    <div class="phone flex flex-col gap-1">
+        <p>Mo ta loi do khach ke</p>
+        <textarea
             class="border border-b-black"
-            type="text"
-            value={serialNo}
-            readonly
-        />
-    </div>
+            rows="3"
+            cols="1"
+            bind:value={issueDesc}
+        ></textarea>
 
-    <div class="flex gap-1">
-        <p>Ghi Chu Nguon Goc</p>
-        <input
-            class="border border-b-black"
-            type="text"
-            value={originNote}
-            readonly
-        />
-    </div>
-    <div class="flex gap-1">
-        <p>Ngay Mua</p>
-        <input
-            class="border border-b-black"
-            type="date"
-            value={purchaseDate}
-            readonly
-        />
-    </div>
-</div>
+        <p>Nhom su co</p>
 
-<!-- Noi Dung Tiep Nhan  -->
-<div class="phone flex flex-col gap-1">
-    <p>Mo ta loi do khach ke</p>
-    <textarea
-        class="border border-b-black"
-        rows="3"
-        cols="1"
-        bind:value={issueDesc}
-    ></textarea>
+        <div>
+            {#each data.categories as category (category.category_id)}
+                <label>
+                    <input
+                        type="radio"
+                        name="issueCategory"
+                        value={category.category_id}
+                        bind:group={issueCategoryId}
+                    />
+                    {category.category_name}
+                </label>
+            {/each}
+        </div>
 
-    <p>Nhom su co</p>
-
-    <div>
-        {#each data.categories as category (category.category_id)}
+        <p>Muc uu tien</p>
+        <div>
             <label>
                 <input
                     type="radio"
-                    name="issueCategory"
-                    value={category.category_id}
-                    bind:group={issueCategoryId}
+                    name="priority"
+                    value="CAO"
+                    bind:group={priority}
                 />
-                {category.category_name}
+                Cao
             </label>
-        {/each}
+            <label>
+                <input
+                    type="radio"
+                    name="priority"
+                    value="TRUNG_BINH"
+                    bind:group={priority}
+                />
+                Trung Binh
+            </label>
+            <label>
+                <input
+                    type="radio"
+                    name="priority"
+                    value="THAP"
+                    bind:group={priority}
+                />
+                Thap
+            </label>
+        </div>
     </div>
 
-    <p>Muc uu tien</p>
+    <!-- Xac Nhan -->
     <div>
-        <label>
-            <input
-                type="radio"
-                name="priority"
-                value="CAO"
-                bind:group={priority}
-            />
-            Cao
-        </label>
-        <label>
-            <input
-                type="radio"
-                name="priority"
-                value="TRUNG_BINH"
-                bind:group={priority}
-            />
-            Trung Binh
-        </label>
-        <label>
-            <input
-                type="radio"
-                name="priority"
-                value="THAP"
-                bind:group={priority}
-            />
-            Thap
-        </label>
+        <p>Xac Nhan</p>
+        {#if createdTicket}
+            <p>Da tao phieu {createdTicket.ticket_code}</p>
+        {/if}
+        <p>Han cam ket: {dueDateLabel}</p>
+        <div>
+            <button class="cancel" type="button">Huy</button>
+            <button
+                class="proceed"
+                type="button"
+                onclick={submitTicket}
+                disabled={submitting || !data.customer}
+            >
+                {submitting ? "Dang tao..." : "Tao Phieu"}
+            </button>
+        </div>
     </div>
-</div>
-
-<!-- Xac Nhan -->
-<div>
-    <p>Xac Nhan</p>
-    {#if createdTicket}
-        <p>Da tao phieu {createdTicket.ticket_code}</p>
-    {/if}
-    <p>Han cam ket: {dueDateLabel}</p>
-    <div>
-        <button class="cancel" type="button">Huy</button>
-        <button
-            class="proceed"
-            type="button"
-            onclick={submitTicket}
-            disabled={submitting || !data.customer}
-        >
-            {submitting ? "Dang tao..." : "Tao Phieu"}
-        </button>
-    </div>
-</div>
-
+{/if}
 <!-- Loi -->
-<div class="error">{errorMessage ?? ""}</div>
+<div class="error text-red-500 border border-red-500">{errorMessage ?? ""}</div>
