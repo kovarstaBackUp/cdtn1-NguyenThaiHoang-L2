@@ -20,7 +20,7 @@ KHÔNG kiểm, và lý do:
 
 ## 2. Loại test và số lượng
 
-Mỗi ca là một test trong `src/tests/`, mã ca ghi ngay trong tiêu đề test, ví dụ `TC-01`. Mục này tóm tắt số lượng và cách chọn dữ liệu, không chép lại từng ca.
+Từng ca, đầy đủ tám cột và kết quả chạy thật, nằm ở `test-report.md`. Mỗi ca là một test trong `src/tests/`, mã ca ghi ngay trong tiêu đề test, ví dụ `TC-01`. Mục này tóm tắt số lượng và cách chọn dữ liệu, không chép lại từng ca.
 
 8 unit (6 ca trên hàm thuần, 2 ca trên service với đối tượng giả), 1 integration (service cộng PostgreSQL thật), 2 API (gọi route thật), 1 tái lập (nạp dữ liệu hai lần).
 

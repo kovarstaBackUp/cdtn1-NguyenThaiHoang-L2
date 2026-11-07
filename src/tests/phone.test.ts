@@ -11,7 +11,7 @@ test('TC-02 chuan hoa so co +84 kem dau cham (BR-02)', () => {
 });
 
 test('TC-03 so chin chu so thi tu choi (BR-02)', () => {
-  expect(normalizePhone('090123')).toBeNull();
+  expect(normalizePhone('090123456')).toBeNull();
 });
 
 test('TC-06 so muoi mot chu so thi tu choi (BR-02)', () => {
