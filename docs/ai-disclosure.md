@@ -34,6 +34,7 @@
 | **DeepSeek** | Package ứng dụng vào docker build | Dockerfile | Đọc và kiểm tra ứng dụng hoạt động chính xác |
 | **DeepSeek** | Reformat lại các file md của bài tập 3 | bug-log.md ; test-plan.md | Đọc và kiểm chứng lại so với bản thảo chưa format |
 | **DeepSeek** | Kiểm tra và cải thiện các test | seed.test.ts ; database.test.ts | Kiểm tra rằng các test thực hiện đúng với mục tiêu, đồng thời kiểm tra không có side effect |
+| **DeepSeek** | Soạn thảo phần kết quả của file pdf cho bài tập 2 | pdfCapstoneTwo.pdf | Kiểm tra thông tin chính xác |
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
@@ -45,4 +46,4 @@
 > **"Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung nộp."**
 
 * **Chữ ký / Họ tên sinh viên:** Nguyễn Thái Hoàng
-* **Ngày khai báo:** 5/11/2026
+* **Ngày khai báo:** 7/11/2026
