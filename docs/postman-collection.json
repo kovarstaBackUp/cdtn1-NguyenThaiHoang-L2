@@ -1,0 +1,301 @@
+{
+  "info": {
+    "name": "Smart CRM - Mekong Mobile - L2 (track SE)",
+    "description": "Seven endpoints of flow L2, plus three requests that trigger error paths. Import into Postman and run with the Local environment, or run headless with newman.\n\nThe two tokens are development tokens for the demo accounts documented in the README; they are not secrets and grant access only to the local demo database.\n\nSome requests depend on data state: POST /api/tickets needs a device without an open ticket, and the two decision requests need an existing ticket id. On a freshly seeded database device 1 works for the first and ticket id 1 works once that ticket exists. The requests appear in the order they were run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    {
+      "key": "tokenNhanVien",
+      "value": "eyJlbXBsb3llZV9pZCI6MSwicm9sZSI6Ik5IQU5fVklFTiIsImNlbnRlcl9jb2RlIjoiVFQwMSJ9"
+    },
+    {
+      "key": "tokenQuanLy",
+      "value": "eyJlbXBsb3llZV9pZCI6Miwicm9sZSI6IlFVQU5fTFkiLCJjZW50ZXJfY29kZSI6IlRUMDEifQ=="
+    },
+    {
+      "key": "tokenQuanLyTT02",
+      "value": "eyJlbXBsb3llZV9pZCI6Miwicm9sZSI6IlFVQU5fTFkiLCJjZW50ZXJfY29kZSI6IlRUMDIifQ=="
+    }
+  ],
+  "item": [
+    {
+      "name": "01 GET customers - found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('phone is masked', () => pm.expect(pm.response.json().phone_masked).to.match(/\\*/));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" }],
+        "url": { "raw": "{{baseUrl}}/api/customers?phone=0900000001", "host": ["{{baseUrl}}"], "path": ["api", "customers"], "query": [{ "key": "phone", "value": "0900000001" }] }
+      }
+    },
+    {
+      "name": "02 GET customers - no token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 401', () => pm.response.to.have.status(401));",
+              "pm.test('code UNAUTHENTICATED', () => pm.expect(pm.response.json().error.code).to.eql('UNAUTHENTICATED'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/customers?phone=0900000001", "host": ["{{baseUrl}}"], "path": ["api", "customers"], "query": [{ "key": "phone", "value": "0900000001" }] }
+      }
+    },
+    {
+      "name": "03 GET customers - injection attempt",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('code INVALID_PHONE', () => pm.expect(pm.response.json().error.code).to.eql('INVALID_PHONE'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" }],
+        "url": { "raw": "{{baseUrl}}/api/customers?phone=' OR 1=1 --", "host": ["{{baseUrl}}"], "path": ["api", "customers"], "query": [{ "key": "phone", "value": "' OR 1=1 --" }] }
+      }
+    },
+    {
+      "name": "04 POST customers",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.test('returns an id', () => pm.expect(pm.response.json().customer_id).to.be.a('number'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"phone\":\"0912345678\",\"full_name\":\"Tran Thi B\",\"address\":\"45 Le Loi\"}" },
+        "url": { "raw": "{{baseUrl}}/api/customers", "host": ["{{baseUrl}}"], "path": ["api", "customers"] }
+      }
+    },
+    {
+      "name": "05 POST devices",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.test('returns a serial', () => pm.expect(pm.response.json().serial_no).to.eql('SN-TEST-API-01'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"customer_id\":5,\"serial_no\":\"SN-TEST-API-01\",\"is_external\":true,\"origin_note\":\"mua tai cua hang khac\",\"purchase_date\":null,\"warranty_months\":12}" },
+        "url": { "raw": "{{baseUrl}}/api/devices", "host": ["{{baseUrl}}"], "path": ["api", "devices"] }
+      }
+    },
+    {
+      "name": "06 GET issue-categories",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('six categories', () => pm.expect(pm.response.json().total).to.eql(6));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" }],
+        "url": { "raw": "{{baseUrl}}/api/issue-categories", "host": ["{{baseUrl}}"], "path": ["api", "issue-categories"] }
+      }
+    },
+    {
+      "name": "07 POST tickets - created",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "pm.test('ticket_code matches BH-nnnnnn/yyyy', () => pm.expect(pm.response.json().ticket_code).to.match(/^BH-\\d{6}\\/\\d{4}$/));",
+              "pm.collectionVariables.set('ticketId', pm.response.json().ticket_id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"customer_id\":1,\"device_id\":1,\"issue_desc\":\"Man hinh chop tat\",\"category_id\":1,\"priority\":\"CAO\"}" },
+        "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+      }
+    },
+    {
+      "name": "08 POST tickets - missing issue_desc",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 400', () => pm.response.to.have.status(400));",
+              "pm.test('names the missing field', () => pm.expect(pm.response.json().error.fields.issue_desc).to.eql('Trường bắt buộc'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"customer_id\":1,\"device_id\":1,\"category_id\":1,\"priority\":\"CAO\"}" },
+        "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+      }
+    },
+    {
+      "name": "09 POST tickets - device does not exist",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 404', () => pm.response.to.have.status(404));",
+              "pm.test('code DEVICE_NOT_FOUND', () => pm.expect(pm.response.json().error.code).to.eql('DEVICE_NOT_FOUND'));",
+              "pm.test('no stack trace leaked', () => pm.expect(pm.response.text()).to.not.match(/\\bat .*\\.(ts|js):\\d+/));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenNhanVien}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"customer_id\":1,\"device_id\":999999,\"issue_desc\":\"thu loi he thong\",\"category_id\":1,\"priority\":\"CAO\"}" },
+        "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+      }
+    },
+    {
+      "name": "10 GET tickets - manager queue",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('each item has a due date', () => pm.expect(pm.response.json().items[0].due_date).to.be.a('string'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenQuanLy}}" }],
+        "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+      }
+    },
+    {
+      "name": "11 GET tickets - other centre sees nothing",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('centre TT02 sees zero tickets', () => pm.expect(pm.response.json().total).to.eql(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenQuanLyTT02}}" }],
+        "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+      }
+    },
+    {
+      "name": "12 PATCH decision - other centre refused",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 403', () => pm.response.to.have.status(403));",
+              "pm.test('code CENTER_OUT_OF_SCOPE', () => pm.expect(pm.response.json().error.code).to.eql('CENTER_OUT_OF_SCOPE'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenQuanLyTT02}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"decision\":\"APPROVE\"}" },
+        "url": { "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/warranty-decision", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{ticketId}}", "warranty-decision"] }
+      }
+    },
+    {
+      "name": "13 PATCH decision - own centre approved",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "pm.test('is_warranty true', () => pm.expect(pm.response.json().is_warranty).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{tokenQuanLy}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"decision\":\"APPROVE\"}" },
+        "url": { "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/warranty-decision", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{ticketId}}", "warranty-decision"] }
+      }
+    }
+  ]
+}
