@@ -60,6 +60,9 @@ services:
       context: .
       target: build
     restart: 'no'
+    # Khong chay khi `docker compose up`. Chi chay khi duoc goi ten:
+    #   docker compose run --rm test
+    profiles: ['tools']
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone
       TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone_test
