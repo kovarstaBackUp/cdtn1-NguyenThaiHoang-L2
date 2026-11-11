@@ -1,175 +1,181 @@
-# Smart CRM - Mekong Mobile - luồng L2
+# Smart CRM - Mekong Mobile - flow L2
 
-## Yêu cầu
+## Requirements
 
-- Node.js v26.12.0 trở lên (phát triển trên 26)
-- pnpm 11 (`packageManager` trong `package.json`)
-- PostgreSQL 15 trở lên - dùng Docker image kèm sẵn hoặc server bạn đã có
+- Node.js v26.12.0 or later (developed on 26)
+- pnpm 11 (see `packageManager` in `package.json`)
+- PostgreSQL 15 or later - either the bundled Docker image or a server you already run
 
-## Chạy nhanh
+## Quick start
 
-### 1. Clone về máy
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2.git
 cd cdtn1-NguyenThaiHoang-L2/src
+```
 
-### 2. Chuẩn bị cơ sở dữ liệu PostgreSQL
+### 2. Prepare the PostgreSQL database
 
-**Cách A - dùng Docker image kèm sẵn (chọn cách này nếu bạn chưa có PostgreSQL).**
+**Option A - use the bundled Docker image (pick this if you have no PostgreSQL).**
 
-Tải docker nếu như chưa có: https://www.docker.com/products/docker-desktop/
+Install Docker first if you do not have it: https://www.docker.com/products/docker-desktop/
 
-`docker-compose.yaml` chạy `postgres:16-alpine` tại `localhost:5432` với
-user/password là `postgres`/`postgres`:
+`docker-compose.yaml` runs `postgres:16-alpine` on `localhost:5432` with the user and
+password `postgres`/`postgres`:
 
 ```bash
 docker compose up -d db
 ```
 
-Chỉ cần vậy là đủ cho phần cơ sở dữ liệu. Nếu muốn chạy cả ứng dụng trong
-Docker, xem mục **Chạy toàn bộ bằng Docker** bên dưới.
+That is all the database part needs. To run the application in Docker as well, see
+**Running everything in Docker** below.
 
-**Cách B - dùng PostgreSQL sẵn có (bỏ qua Docker hoàn toàn).**
+**Option B - use an existing PostgreSQL (skip Docker entirely).**
 
-Bất kỳ PostgreSQL 15+ nào truy cập được đều dùng được: bản cài trên máy,
-container bạn đang chạy, hoặc server quản lý. Tạo cơ sở dữ liệu một lần, rồi trỏ
-`DATABASE_URL` vào đó ở bước 2:
+Any reachable PostgreSQL 15 or later works: a local install, a container you already run,
+or a managed server. Create the database once, then point `DATABASE_URL` at it in step 3:
 
 ```bash
-createdb capstoneone     # hoặc: CREATE DATABASE capstoneone;
+createdb capstoneone     # or: CREATE DATABASE capstoneone;
 ```
 
-**Cách C - Prisma Postgres qua Composer.**
+**Option C - Prisma Postgres through the Composer.**
 
 ```bash
 pnpm run dev:composer
 ```
 
-Lệnh này build ứng dụng, cấp phát một cơ sở dữ liệu Prisma Postgres cục bộ và áp
-schema, nên bạn bỏ qua bước 2 đến 5. Nếu chỉ muốn Vite dev server thuần, dùng
-`pnpm run dev`.
+This builds the application, provisions a local Prisma Postgres database and applies the
+schema, so steps 2 to 5 are covered. For a plain Vite dev server, use `pnpm run dev`.
 
-> **Nếu bạn dùng chung container Docker với dự án khác**, đừng chạy
-> `docker compose down -v`. Lệnh đó xóa named volume và toàn bộ cơ sở dữ liệu bên
-> trong, kể cả dữ liệu của dự án khác. Cách tắt an toàn là `docker compose stop db`.
+> **If you share a Docker container with another project**, do not run
+> `docker compose down -v`. It deletes the named volume and every database inside it,
+> including another project's data. The safe way to stop is `docker compose stop db`.
 
-### 3. Cấu hình môi trường
+### 3. Configure the environment
 
 ```bash
 cp .env.example .env
 ```
 
-`.env.example` ghi rõ từng biến. Biến bắt buộc duy nhất là `DATABASE_URL`; nhóm
-`DEV_*` là tiện ích lúc phát triển, mô tả bên dưới.
+`.env.example` documents every variable. The only required one is `DATABASE_URL`; the
+`DEV_*` group is a development convenience described below.
 
-### 4. Cài đặt phụ thuộc
+### 4. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### 5. Tạo schema và nạp dữ liệu mẫu
+### 5. Create the schema and load sample data
 
 ```bash
-pnpm run db:init     # tạo sáu bảng, ràng buộc và chỉ mục
-pnpm run db:seed     # nạp danh mục, khách hàng và thiết bị demo
+pnpm run db:init     # creates six tables, their constraints and indexes
+pnpm run db:seed     # loads categories, the demo customer and devices
 ```
 
-`db:init` áp `src/prisma/contract.ts` lên cơ sở dữ liệu trống rồi đánh dấu (sign).
-`db:seed` chạy lại nhiều lần vẫn an toàn. Lệnh seed thêm sáu danh mục lỗi (BR-15),
-hai nhân viên, và một khách hàng demo với ba thiết bị.
+`db:init` applies `src/prisma/contract.ts` to an empty database and signs it. `db:seed` is
+safe to run repeatedly. It adds six issue categories, two employees, and one demo customer
+with three devices.
 
-### 6. Chạy ứng dụng
+### 6. Run the application
 
 ```bash
 pnpm run dev
 ```
 
-Vite phục vụ ứng dụng tại `http://localhost:5173`, hoặc cổng trống kế tiếp nếu cổng
-đó đang bận - hãy đọc cổng mà nó in ra. Sau đó mở `/` và đăng nhập.
+Vite serves the application on `http://localhost:5173`, or the next free port if that one is
+taken - read the port it prints. Then open `/` and sign in.
 
-### 7. Đăng nhập
+### 7. Sign in
 
-Hai tài khoản demo, dùng chung một trang `/login`:
+Two demo accounts share the `/login` page:
 
-| Tài khoản | Mật khẩu | Vai trò | Trang bắt đầu |
+| Account | Password | Role | Landing page |
 |---|---|---|---|
-| `admin` | `admin` | Quản lý trung tâm | `/duyetPhieuBaoHanh` |
-| `employee` | `employee` | Nhân viên tiếp nhận | `/traCuuKhachHang` |
+| `admin` | `admin` | Centre manager | `/duyetPhieuBaoHanh` |
+| `employee` | `employee` | Intake clerk | `/traCuuKhachHang` |
 
-Đăng nhập chỉ đổi danh tính trong phiên (cookie `session`, 8 giờ). Vào `/logout` để
-xoá phiên. Khi chưa đăng nhập, mọi màn hình trong nhóm `(app)` đều chuyển về
+Signing in only changes the identity inside the session (a `session` cookie, 8 hours).
+Visit `/logout` to clear it. While signed out, every screen under `(app)` redirects to
 `/login`.
 
-## Chạy toàn bộ bằng Docker
+## Running everything in Docker
 
-`Dockerfile` đóng gói ứng dụng theo nhiều giai đoạn (multi-stage) và
-`docker-compose.yaml` dựng cả PostgreSQL, bước tạo schema/nạp dữ liệu mẫu, và
-ứng dụng:
+`Dockerfile` packages the application in multiple stages, and `docker-compose.yaml` brings
+up PostgreSQL, the schema and seed step, and the application:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-Mở `http://localhost:3000`. Service `init` chạy `db:init` và `db:seed` một lần
-(cả hai lệnh đều chạy lại an toàn), rồi service `app` mới khởi động. Dữ liệu
-PostgreSQL nằm trong named volume `postgres-data`.
+Open `http://localhost:3000`. The `init` service runs `db:init` and `db:seed` once (both are
+safe to repeat) and exits, and only then does the `app` service start. PostgreSQL data lives
+in the named volume `postgres-data`.
 
-Chỉ dựng cơ sở dữ liệu (dùng với `pnpm run dev`):
+The test suite runs inside the container on demand, not as part of `up`:
+
+```bash
+docker compose run --rm test
+```
+
+Build the database alone (for use with `pnpm run dev`):
 
 ```bash
 docker compose up -d db
 ```
 
-## Các lệnh thường dùng
+## Common commands
 
-| Lệnh | Tác dụng |
+| Command | Effect |
 |---|---|
-| `pnpm run dev` | Chạy Vite dev server |
-| `pnpm run check` | Chạy `svelte-check` cho cả Svelte và TypeScript |
-| `pnpm run build` | Build bản production |
-| `pnpm run db:init` | Tạo các bảng từ contract |
-| `pnpm run db:update` | Đẩy thay đổi contract lên cơ sở dữ liệu đang có |
-| `pnpm run db:verify` | Đối chiếu cơ sở dữ liệu với contract |
-| `pnpm run db:seed` | Nạp dữ liệu mẫu (chạy lại vẫn an toàn) |
-| `pnpm run contract:emit` | Sinh lại `contract.json` / `contract.d.ts` sau khi sửa contract |
-| `pnpm run migration:status` | So sánh đồ thị migration với marker trong cơ sở dữ liệu |
-| `pnpm run test` | Chạy bộ kiểm thử Vitest một lần |
-| `pnpm run test:watch` | Chạy Vitest ở chế độ theo dõi |
+| `pnpm run dev` | Run the Vite dev server |
+| `pnpm run check` | Run `svelte-check` across Svelte and TypeScript |
+| `pnpm run build` | Build the production bundle |
+| `pnpm run db:init` | Create the tables from the contract |
+| `pnpm run db:update` | Push contract changes to an existing database |
+| `pnpm run db:verify` | Compare the database against the contract |
+| `pnpm run db:seed` | Load sample data (safe to repeat) |
+| `pnpm run contract:emit` | Regenerate `contract.json` / `contract.d.ts` after editing the contract |
+| `pnpm run migration:status` | Compare the migration graph with the marker in the database |
+| `pnpm run test` | Run the Vitest suite once |
+| `pnpm run test:watch` | Run Vitest in watch mode |
 
-## Kiểm thử
+## Testing
 
 ```bash
-pnpm run test          # chạy một lần
-pnpm run test:watch    # chế độ theo dõi
+pnpm run test          # once
+pnpm run test:watch    # watch mode
 ```
 
-`tests/` có mười ca. Tám ca đầu chạy trên hàm thuần và trên service với đối tượng giả,
-không cần cơ sở dữ liệu: che số điện thoại (NFR2), chuẩn hoá số điện thoại (BR-02),
-tính hạn cam kết (BR-09, BR-10, kể cả việc bỏ qua Chủ nhật), sinh mã phiếu và ghi nhật
-ký đầu tiên (BR-07, BR-08), chặn phiếu thứ hai trên cùng thiết bị (BR-06), và kiểm định
-dạng ngày mua (BUG-02, BUG-03). Bốn ca còn lại cần database test.
+`tests/` holds fourteen cases. The first eight run on pure functions and on services with
+fake objects, and need no database: phone masking (NFR2), phone normalisation (BR-02),
+commitment deadlines (BR-09, BR-10, including the skipped Sunday), ticket code generation
+and the first log row (BR-07, BR-08), refusing a second ticket on the same device (BR-06),
+and purchase date validation (BUG-02, BUG-03). The remaining six need the test database.
 
-Test chạy trên `capstoneone_test` chứ **không** chạm `capstoneone`: `tests/helpers/setup-env.ts`
-tự trỏ `DATABASE_URL` của tiến trình test sang database đó, nên không phải sửa `.env`.
-Database này do `docker/init/01-capstoneone-test.sql` tạo một lần khi volume còn trống, và
-dịch vụ `init` của compose áp lược đồ cùng seed cho nó. Mỗi ca tự tạo khách và thiết bị
-riêng với khóa sinh từ đồng hồ, nên chạy lại nhiều lần vẫn không đụng nhau.
+The suite runs against `capstoneone_test` and **never** touches `capstoneone`:
+`tests/helpers/setup-env.ts` points the test process's `DATABASE_URL` at the test database,
+so `.env` does not need editing. That database is created once by
+`docker/init/01-capstoneone-test.sql` while the volume is empty, and the compose `init`
+service applies the schema and seed to it. Each case creates its own customer and device
+with clock-derived keys, so repeated runs do not collide.
 
-## Màn hình
+## Screens
 
-| Màn hình | Đường dẫn | Vai trò | Chức năng |
+| Screen | Path | Role | Function |
 |---|---|---|---|
-| Tra cứu khách hàng | `/traCuuKhachHang` | cả hai vai trò | Tra cứu khách hàng theo số điện thoại, xem thiết bị của họ, tạo khách hàng mới |
-| Lập phiếu bảo hành | `/taoPhieuBaoHanh` | Nhân viên tiếp nhận | Đăng ký thiết bị, lập phiếu, xem mã phiếu và hạn cam kết được sinh ra |
-| Duyệt hình thức bảo hành | `/duyetPhieuBaoHanh` | Quản lý trung tâm | Hàng đợi duyệt, xếp phiếu quá hạn lên trước, duyệt hoặc từ chối kèm lý do |
+| Customer look-up | `/traCuuKhachHang` | both roles | Find a customer by phone, see their devices, create a new customer |
+| Create warranty ticket | `/taoPhieuBaoHanh` | Intake clerk | Register a device, create a ticket, see the generated code and due date |
+| Decide warranty type | `/duyetPhieuBaoHanh` | Centre manager | Approval queue, overdue tickets first, approve or reject with a reason |
 
 ## API
 
-`Content-Type: application/json`. Tên trường viết `snake_case` và trùng với tên cột
-trong cơ sở dữ liệu. Mốc thời gian theo ISO 8601 giờ Việt Nam
-(`2026-09-08T14:30:00+07:00`).
+`Content-Type: application/json`. Field names are `snake_case` and match the database column
+names. Timestamps are ISO 8601 in Vietnam time (`2026-09-08T14:30:00+07:00`).
 
-| # | Phương thức | Đường dẫn | Nhân viên tiếp nhận | Quản lý trung tâm |
+| # | Method | Path | Intake clerk | Centre manager |
 |---|---|---|---|---|
 | 1 | GET | `/api/customers?phone=` | 200 | 200 |
 | 2 | POST | `/api/customers` | 201 | 403 |
@@ -179,78 +185,95 @@ trong cơ sở dữ liệu. Mốc thời gian theo ISO 8601 giờ Việt Nam
 | 6 | GET | `/api/tickets` | 403 | 200 |
 | 7 | PATCH | `/api/tickets/{ticket_id}/warranty-decision` | 403 | 200 |
 
-`GET /api/tickets` nhận các tham số tùy chọn `category_id`, `warranty`
-(`CHUA_DUYET` | `MIEN_PHI` | `TINH_PHI`), `page` và `size` (mặc định 20, tối đa 100).
-Kết quả trả về đã được sắp xếp sẵn: phiếu quá hạn trước, rồi phiếu còn hạn, trong
-mỗi nhóm tăng dần theo `due_date` (BR-20). Phía client không sắp xếp lại.
+**The last two columns describe the intended role design, not the current behaviour.**
+`AUTHORIZATION_ENFORCED` in `src/services/access.ts` is `false`, so role guards do nothing
+and every authenticated caller reaches every endpoint. Only the centre rule is always
+enforced. `docs/api-docs.md` documents what the running system actually does.
 
-Mọi phản hồi đều có `phone_masked` dạng `090****567`. Trường `phone` đầy đủ chỉ
-xuất hiện khi người gọi là Quản lý trung tâm (NFR2, QT-15).
+`GET /api/tickets` accepts the optional parameters `category_id`, `warranty`
+(`CHUA_DUYET` | `MIEN_PHI` | `TINH_PHI`), `page` and `size` (default 20, maximum 100).
+Results arrive already sorted: overdue tickets first, then those still in time, each group
+ascending by `due_date`. The client does not re-sort.
 
-### Cấu trúc lỗi
+Every response carries `phone_masked` in the form `090****567`. The full phone number is
+never returned on any endpoint (NFR2, QT-15).
 
-Mọi lỗi dùng chung một dạng:
+### Error shape
+
+Every error uses one shape:
 
 ```json
 { "error": { "code": "MA_LOI", "message": "Thông báo cho người dùng", "fields": { "ten_truong": "chi tiết" } } }
 ```
 
-| Mã lỗi | HTTP | Khi nào |
+| Code | HTTP | When |
 |---|---|---|
-| `UNAUTHENTICATED` | 401 | Thiếu token hoặc token hết hạn |
-| `FORBIDDEN_ROLE` | 403 | Vai trò không được phép gọi endpoint này |
-| `CENTER_OUT_OF_SCOPE` | 403 | Phiếu thuộc trung tâm khác |
-| `INVALID_PHONE` | 400 | Số điện thoại sai định dạng sau khi chuẩn hóa |
-| `VALIDATION_FAILED` | 400 | Thiếu trường hoặc sai kiểu dữ liệu |
-| `REASON_REQUIRED` | 400 | Từ chối phiếu nhưng không nêu lý do |
-| `PARAM_INVALID` | 400 | Tham số truy vấn không hợp lệ |
-| `CUSTOMER_NOT_FOUND` | 404 | Không có bản ghi ứng với số điện thoại hoặc `customer_id` |
-| `DEVICE_NOT_FOUND` | 404 | `device_id` không tồn tại hoặc không thuộc khách hàng |
-| `CATEGORY_NOT_FOUND` | 404 | `category_id` không có trong danh mục |
-| `TICKET_NOT_FOUND` | 404 | `ticket_id` không tồn tại |
-| `CUSTOMER_EXISTS` | 409 | Trùng số điện thoại khi lưu |
-| `SERIAL_OWNED_BY_OTHER` | 409 | Số serial đã thuộc khách hàng khác |
-| `DEVICE_HAS_OPEN_TICKET` | 409 | Thiết bị đã có phiếu chưa đóng |
-| `ALREADY_DECIDED` | 409 | Phiếu đã được duyệt hoặc từ chối |
+| `UNAUTHENTICATED` | 401 | Missing or expired token |
+| `FORBIDDEN_ROLE` | 403 | The role may not call this endpoint (dormant while role checks are off) |
+| `CENTER_OUT_OF_SCOPE` | 403 | The ticket belongs to another centre |
+| `INVALID_PHONE` | 400 | The phone number is invalid after normalisation |
+| `VALIDATION_FAILED` | 400 | A field is missing or of the wrong type |
+| `REASON_REQUIRED` | 400 | Rejecting a ticket without giving a reason |
+| `PARAM_INVALID` | 400 | A query parameter is invalid |
+| `CUSTOMER_NOT_FOUND` | 404 | No customer matches the phone or `customer_id` |
+| `DEVICE_NOT_FOUND` | 404 | `device_id` does not exist or does not belong to the customer |
+| `CATEGORY_NOT_FOUND` | 404 | `category_id` is not in the category list |
+| `TICKET_NOT_FOUND` | 404 | `ticket_id` does not exist |
+| `CUSTOMER_EXISTS` | 409 | The phone number is already stored |
+| `SERIAL_OWNED_BY_OTHER` | 409 | The serial already belongs to another customer |
+| `DEVICE_HAS_OPEN_TICKET` | 409 | The device already has an undecided ticket |
+| `ALREADY_DECIDED` | 409 | The ticket already has a decision |
 
-Không có mã `422`. Hết bảo hành không phải là lỗi: mọi phiếu đều được tạo ở trạng
-thái chờ duyệt.
+There is no `422`. An expired warranty is not an error: every ticket is created in the
+pending state.
 
-## Phân quyền
+## Access control
 
-Phần xác thực mới chỉ là stub. `src/hooks.server.ts` đọc danh tính từ hai nguồn:
-cookie phiên `session` do trang `/login` đặt, hoặc header
-`Authorization: Bearer <base64 of {"employee_id","role","center_code"}>` cho script
-gọi API. Cả hai mang cùng một payload.
+Authentication is a stub. `src/hooks.server.ts` reads the identity from two places: the
+`session` cookie set by `/login`, or an
+`Authorization: Bearer <base64 of {"employee_id","role","center_code"}>` header for scripts
+calling the API. Both carry the same payload.
 
-Riêng request tới `/api/` khi chạy dev mà không có danh tính sẽ dùng biến `DEV_*`,
-nên `curl` và script vẫn gọi được API mà không cần token. Các màn hình thì bắt buộc
-đăng nhập.
+In development, a request to `/api/` that carries no identity falls back to the `DEV_*`
+variables, so `curl` and scripts can call the API without a token. The screens always
+require signing in.
 
-**Kiểm tra vai trò đang được tắt có chủ đích để ai cũng dùng được mọi màn hình.**
-Hằng `AUTHORIZATION_ENFORCED` trong `src/services/access.ts` đang là `false`, khiến
-`requireReceptionist` và `requireManager` không làm gì. Đổi hằng đó thành `true` để
-khôi phục bảng phân quyền ở mục 3: nhân viên tiếp nhận có `POST /api/customers`,
-`POST /api/devices` và `POST /api/tickets`; chỉ Quản lý trung tâm được đọc hàng đợi
-hoặc quyết định phiếu.
+**Role checks are switched off on purpose so anyone can open every screen.**
+`AUTHORIZATION_ENFORCED` in `src/services/access.ts` is `false`, which makes
+`requireReceptionist` and `requireManager` do nothing. Set it to `true` to restore the table
+in the API section: intake clerks get `POST /api/customers`, `POST /api/devices` and
+`POST /api/tickets`; only centre managers read the queue or decide a ticket.
 
-Giới hạn theo trung tâm (BR-17, QT-14) vẫn được áp dụng: người gọi chỉ thấy các
-phiếu có `center_code` trùng với token của mình. Mặc định khi dev là `TT01` và dữ
-liệu mẫu cũng nằm ở đó, nên bình thường bạn sẽ không thấy khác biệt.
+The centre rule (BR-17, QT-14) is always applied: a caller only sees tickets whose
+`center_code` matches their token. In development the default is `TT01` and the sample data
+sits there too, so normally you will not notice a difference.
 
-## Cơ sở dữ liệu và contract
+## Database and contract
 
-`src/prisma/contract.ts` là nguồn duy nhất (single source of truth) cho schema. DDL
-được sinh ra từ đó, nên không có file `.sql` viết tay để lệch khỏi schema. Sau khi
-sửa contract:
+`src/prisma/contract.ts` is the single source of truth for the schema. The DDL is generated
+from it, so there is no hand-written `.sql` file to drift away from the schema. After
+editing the contract:
 
 ```bash
-pnpm run contract:emit    # sinh lại contract.json / contract.d.ts
-pnpm run db:update        # áp lên cơ sở dữ liệu
+pnpm run contract:emit    # regenerate contract.json / contract.d.ts
+pnpm run db:update        # apply it to the database
 ```
 
-`migrations/` chứa các artefact migration và snapshot của Prisma. Lưu ý
-`pnpm run migration:status` có thể báo marker trong cơ sở dữ liệu không khớp với đồ
-thị migration trên đĩa - điều đó chỉ có nghĩa là cơ sở dữ liệu được cập nhật lần
-cuối bằng `db:update` chứ không qua luồng migration. Đây không phải lỗi và schema
-vẫn đúng.
+`migrations/` holds the Prisma migration artefacts and snapshots. Note that
+`pnpm run migration:status` may report that the marker in the database does not match the
+migration graph on disk - that only means the database was last updated through `db:update`
+rather than through the migration flow. It is not an error and the schema is still correct.
+
+## Further documentation
+
+| Document | Contents |
+|---|---|
+| `docs/deployment-guide.md` | English deployment guide: requirements, setup, variables, sample data, verification |
+| `docs/api-docs.md` | English API reference for all seven endpoints, with real request and response examples |
+| `docs/checklist-bao-mat.md` | Seven-item security checklist with evidence per item |
+| `docs/test-plan.md` | Test plan, four sections |
+| `docs/test-report.md` | Twelve cases in eight columns, plus the OWASP security checks |
+| `docs/bug-log.md` | Four fixed bugs, seven lines each, with commit links |
+| `docs/postman-collection.json` | Postman collection for the seven endpoints |
+| `docs/screenshots/` | Evidence images: per case, white machine test, screens, screen states |
+| `docs/thay-doi-thiet-ke.md` | Design change log after the Session 6 and Session 12 feedback |
