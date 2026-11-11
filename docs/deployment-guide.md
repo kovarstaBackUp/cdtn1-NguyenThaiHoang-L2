@@ -107,11 +107,21 @@ docker compose ps
 Expected: `db` and `app` report `Up ... (healthy)`, and `init` reports `Exited (0)`.
 
 ```
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login
 ```
 
-Expected: `200`. The login page is also reachable with
-`curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/login`, also `200`.
+Expected: `200`.
+
+`GET /` deliberately returns `303` and redirects to `/login`, because no session cookie
+is sent. That is the correct behaviour for a request without a session, so verify with
+`/login`, not with `/`:
+
+```
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/api/issue-categories
+```
+
+Expected: `401`, because the endpoint requires a token and no `Authorization` header was
+sent. A `200` here would mean authentication is not being enforced.
 
 ```
 docker compose run --rm test
