@@ -51,5 +51,22 @@ services:
       init:
         condition: service_completed_successfully
 
+  # Chay bo test ben trong container, dung cho buoc "Verify it works" cua
+  # Deployment Guide va phep thu may trang. Anh runner khong co vitest va khong
+  # co thu muc tests/, nen phai dung lai tang build giong dich vu init.
+  # Chay: docker compose run --rm test
+  test:
+    build:
+      context: .
+      target: build
+    restart: 'no'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone
+      TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/capstoneone_test
+    command: pnpm run test
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
 volumes:
   postgres-data:
