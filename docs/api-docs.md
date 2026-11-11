@@ -73,7 +73,7 @@ GET /api/customers?phone=0900000001
 3. **Auth:** any authenticated caller.
 4. **Request:** body `phone` (required, ten digits), `full_name` (required), `address` (optional).
 5. **Success:** `201` with the new id and the masked phone.
-6. **Errors:** `401 UNAUTHENTICATED`; `400 VALIDATION_FAILED` with `fields` naming the missing field; `409 CUSTOMER_PHONE_TAKEN` when the phone already exists.
+6. **Errors:** `401 UNAUTHENTICATED`; `400 VALIDATION_FAILED` with `fields` naming the missing field; `409 CUSTOMER_EXISTS` when the phone already exists.
 7. **Real example:**
 
 ```
@@ -90,7 +90,7 @@ POST /api/customers
 3. **Auth:** any authenticated caller.
 4. **Request:** `customer_id`, `serial_no`, `is_external`, `origin_note` (required when `is_external` is true), `purchase_date` (optional, `YYYY-MM-DD`, must be a real date and not in the future), `warranty_months` (1 to 120, defaults to 12).
 5. **Success:** `201` with the new device.
-6. **Errors:** `401 UNAUTHENTICATED`; `400 VALIDATION_FAILED` with `fields`; `404 CUSTOMER_NOT_FOUND`; `409 DEVICE_SERIAL_TAKEN` when the serial already belongs to another customer.
+6. **Errors:** `401 UNAUTHENTICATED`; `400 VALIDATION_FAILED` with `fields`; `404 CUSTOMER_NOT_FOUND`; `409 SERIAL_OWNED_BY_OTHER` when the serial already belongs to another customer.
 7. **Real example:**
 
 ```
@@ -144,12 +144,12 @@ The due date is 24 hours after `received_at` for priority `CAO`, 72 hours for
 
 ## 6. GET /api/tickets
 
-1. **Method and path:** `GET /api/tickets?status=<status>&page=<n>&size=<n>`
-2. **Purpose:** the manager's queue, newest first, split into overdue and not overdue by the client.
+1. **Method and path:** `GET /api/tickets?warranty=<filter>&category_id=<id>&page=<n>&size=<n>`
+2. **Purpose:** the manager's queue, already sorted for display.
 3. **Auth:** any authenticated caller, but the result is always filtered to the caller's centre.
-4. **Request:** optional `status` (`CHUA_DUYET` or `DA_DUYET`), optional `page` (default 1), optional `size` (default 20).
-5. **Success:** `200` with `total`, `page`, `size` and `items`; each item carries `is_overdue`, the category name, the customer's name and masked phone, and the device serial.
-6. **Errors:** `401 UNAUTHENTICATED`; `400 VALIDATION_FAILED` for a bad `status`, `page` or `size`.
+4. **Request:** optional `warranty` (`CHUA_DUYET`, `MIEN_PHI` or `TINH_PHI`), optional `category_id`, optional `page` (default 1), optional `size` (default 20, maximum 100).
+5. **Success:** `200` with `total`, `page`, `size` and `items`; each item carries `is_overdue`, the category name, the customer's name and masked phone, and the device serial. Overdue tickets come first, then the rest, each group ascending by `due_date`, so the client does not sort again.
+6. **Errors:** `401 UNAUTHENTICATED`; `400 PARAM_INVALID` for a bad `warranty`, `category_id`, `page` or `size`.
 7. **Real example:**
 
 ```
@@ -189,19 +189,29 @@ PATCH /api/tickets/1/warranty-decision   (token for centre TT01)
 
 ## Error code table
 
-These codes were produced by the calls above, not copied from a design document.
+Every code below is declared in `src/src/errors/app-error.ts`, which also fixes the HTTP
+status for each one. The right-hand column names the request that produces it.
 
 | Code | Status | Triggered by |
 | :--- | :--- | :--- |
 | `UNAUTHENTICATED` | 401 | `GET /api/customers` with no `Authorization` header |
+| `FORBIDDEN_ROLE` | 403 | A role guard rejecting the caller. Dormant today, because `AUTHORIZATION_ENFORCED` is `false` |
+| `CENTER_OUT_OF_SCOPE` | 403 | `PATCH` on a ticket belonging to another centre |
 | `INVALID_PHONE` | 400 | `GET /api/customers?phone=' OR 1=1 --` |
 | `VALIDATION_FAILED` | 400 | `POST /api/tickets` with a missing `issue_desc` |
-| `CUSTOMER_NOT_FOUND` | 404 | `POST /api/devices` with `customer_id: 2` when that id does not exist |
+| `REASON_REQUIRED` | 400 | `PATCH` with `decision: "REJECT"` and an empty `reject_reason` |
+| `PARAM_INVALID` | 400 | `GET /api/tickets?warranty=SAI` |
+| `CUSTOMER_NOT_FOUND` | 404 | `POST /api/devices` with a `customer_id` that does not exist |
 | `DEVICE_NOT_FOUND` | 404 | `POST /api/tickets` with `device_id: 999999` |
+| `CATEGORY_NOT_FOUND` | 404 | `POST /api/tickets` with a `category_id` that does not exist |
 | `TICKET_NOT_FOUND` | 404 | `PATCH` on a ticket id that does not exist |
-| `CENTER_OUT_OF_SCOPE` | 403 | `PATCH` on a ticket belonging to another centre |
+| `CUSTOMER_EXISTS` | 409 | `POST /api/customers` with a phone already stored |
+| `SERIAL_OWNED_BY_OTHER` | 409 | `POST /api/devices` with a serial owned by another customer |
 | `DEVICE_HAS_OPEN_TICKET` | 409 | A second ticket on a device that already has an undecided one |
 | `ALREADY_DECIDED` | 409 | A second decision on a ticket that already has one |
+
+There is no `422`. An expired warranty is not an error: every ticket is created in the
+pending state.
 
 ## Where this document and the older contract disagree
 
