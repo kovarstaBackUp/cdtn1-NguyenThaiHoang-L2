@@ -24,6 +24,29 @@ tái lập 1. Mã quy tắc nghiệp vụ ghi ở cột kết quả mong đợi.
 | TC-13 [SE] | Đồng hồ cố định vào 01:00 giờ Việt Nam ngày 06/11/2026 | Gọi `validateDeviceInput` với ngày mua là hôm nay theo giờ Việt Nam | `2026-11-05T18:00:00Z`, `purchase_date` là `2026-11-06` | Ngày mua được chấp nhận và trả về đúng chuỗi đó (canh BUG-02) | Medium | `purchaseDate` trả `2026-11-06`, không ném lỗi | PASS |
 | TC-14 [SE] | Validator thiết bị đã có | Gọi `validateDeviceInput` với ngày mua sai định dạng, rồi với ngày không có thật | `10/02/2026` và `2026-02-30` | Cả hai đều ném `VALIDATION_FAILED` với trạng thái 400 và thông điệp "Ngày mua không hợp lệ" (canh BUG-03) | Medium | Cả hai đều ném `VALIDATION_FAILED` 400, thông điệp "Ngày mua không hợp lệ" | PASS |
 
+## Kiểm bảo mật theo OWASP
+
+Năm mục A01, A02, A04, A05, A07 theo buổi 13. Đây là các phép kiểm **chạy tay bằng curl**
+vào container đang chạy, không nằm trong bộ test tự động, nên được xếp riêng ngoài mười
+hai ca ở trên. Mỗi dòng vẫn đủ tám cột.
+
+| ID | Precondition | Steps | Test data | Expected result | Priority | Actual result | P/F |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| TC-15 [SE] | Container đang chạy, không gửi header xác thực | Gọi `GET /api/customers` | không có token | Mã 401, mã lỗi `UNAUTHENTICATED` (A07) | High | 401, `{"code":"UNAUTHENTICATED","message":"Vui lòng đăng nhập"}` | PASS |
+| TC-16 [SE] | Token hợp lệ đã có | Sửa một ký tự bên trong phần payload của token rồi gọi lại | token đã bị sửa | Mã 401 (A07) | High | 401 `UNAUTHENTICATED` | PASS |
+| TC-17 [SE] | Token hợp lệ đã có | Tự tạo token bằng base64 cho một danh tính khác rồi gọi lại | `{"employee_id":1,"role":"QUAN_LY","center_code":"TT99"}` | Mã 401, vì token không có chữ ký nên phải bị từ chối (A07) | High | **200**, trả về hồ sơ khách hàng. Token tự tạo được chấp nhận | FAIL |
+| TC-18 [SE] | Có phiếu `BH-000001/2026` thuộc trung tâm `TT01` | Quản lý `TT02` gọi `PATCH /api/tickets/1/warranty-decision`, rồi quản lý `TT01` gọi lại | `{"decision":"APPROVE"}` | Lần một 403 `CENTER_OUT_OF_SCOPE`, lần hai 200 (A01) | High | Lần một 403 `CENTER_OUT_OF_SCOPE`; lần hai 200 với `is_warranty` `true`, `verified_by` 2 | PASS |
+| TC-19 [SE] | Container đang chạy | Gọi ô tra cứu với chuỗi tấn công injection | `phone=' OR 1=1 --` | Mã 400, không trả về toàn bộ bản ghi (A05) | High | 400 `INVALID_PHONE`, không có bản ghi nào | PASS |
+| TC-20 [SE] | Container đang chạy | Gọi `POST /api/tickets` với mã thiết bị không tồn tại | `device_id` 999999 | Mã 404, phản hồi không lộ vết ngăn xếp hay tên bảng (A02) | High | 404 `{"code":"DEVICE_NOT_FOUND","message":"Thiết bị không thuộc về khách hàng này"}`, không có vết ngăn xếp | PASS |
+| — | Bảng `employee` không có cột mật khẩu, đăng nhập dùng tài khoản stub | Đọc lược đồ bảng `employee` | không có | Không áp dụng cho A04 | — | Không áp dụng: không có mật khẩu nào được lưu trong cơ sở dữ liệu | N/A |
+
+TC-17 FAIL là lỗi thật và **cố ý không sửa trong đợt này**. Token là base64 của JSON
+không có chữ ký, nên ai cũng tạo được token cho bất kỳ nhân viên và bất kỳ trung tâm nào,
+và điều đó vô hiệu hoá luôn giới hạn theo trung tâm ở TC-18. Cách sửa là ký HMAC-SHA256
+lên payload và kiểm chữ ký trong `hooks.server.ts`, nhưng làm vậy sẽ vô hiệu hoá toàn bộ
+token đang được ghi trong Bug Log và trong hướng dẫn, nên phải sửa đồng thời mọi tài liệu.
+Ghi nhận trung thực ở đây và ở mục 7 của `docs/checklist-bao-mat.md`.
+
 ## Ghi chú
 
 - TC-01 đến TC-08 không cần cơ sở dữ liệu. TC-09 đến TC-12 cần database test
