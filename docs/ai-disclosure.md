@@ -35,7 +35,15 @@
 | **DeepSeek** | Reformat lại các file md của bài tập 3 | bug-log.md ; test-plan.md | Đọc và kiểm chứng lại so với bản thảo chưa format |
 | **DeepSeek** | Kiểm tra và cải thiện các test | seed.test.ts ; database.test.ts | Kiểm tra rằng các test thực hiện đúng với mục tiêu, đồng thời kiểm tra không có side effect |
 | **DeepSeek** | Soạn thảo phần kết quả của file pdf cho bài tập 2 | pdfCapstoneTwo.pdf | Kiểm tra thông tin chính xác |
-| **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, erd.dmbl | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
+| **DeepSeek** | Viết Deployment Guide tiếng Anh, gồm mục Verify it works | docs/deployment-guide.md | Chạy phép thử máy trắng từ thư mục trống theo đúng các lệnh ghi trong Guide, phát hiện bước kiểm tra ghi sai và sửa lại cho khớp hành vi thật của bản dựng |
+| **DeepSeek** | Viết checklist bảo mật bảy mục và đề xuất cách kiểm từng mục | docs/checklist-bao-mat.md | Chạy từng phép kiểm bằng curl vào container đang chạy, ghi lại mã trạng thái và thân phản hồi thật, kể cả mục bị đánh giá là chưa làm |
+| **DeepSeek** | Viết tài liệu API tiếng Anh cho bảy endpoint | docs/api-docs.md | Đếm lại số route trong mã, đối chiếu từng mã lỗi với app-error.ts và từng tham số với validator, sửa ba chỗ ghi sai |
+| **DeepSeek** | Viết Test Report và các ca kiểm bảo mật theo OWASP | docs/test-report.md | Chạy lại bộ test, chạy từng ca riêng để lấy output thật, ghi kết quả đúng như quan sát, gồm một ca ghi FAIL |
+| **DeepSeek** | Tạo Postman collection cho bảy endpoint | docs/postman-collection.json | Kiểm cú pháp JSON và đối chiếu từng request với lần gọi thật trước đó |
+| **DeepSeek** | Điều khiển Chrome chụp ảnh minh chứng | docs/screenshots/ | Mở ứng dụng thật để chụp ba màn hình và ba trạng thái; ảnh TC-01 đến TC-14 dựng từ chính output của lệnh chạy, không phải ảnh chụp màn hình terminal |
+| **DeepSeek** | Thêm dịch vụ test vào compose và kịch bản tạo database test | src/docker-compose.yaml, src/docker/init/ | Chạy docker compose run --rm test, kiểm 14/14 PASS bên trong container |
+| **DeepSeek** | Viết lại README sang tiếng Anh | README.md | Đối chiếu từng mục với mã nguồn, sửa ba chỗ README nói sai so với hệ thống thật |
+| **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, schema.dbml | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
 
