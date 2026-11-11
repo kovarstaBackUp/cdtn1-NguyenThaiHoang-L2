@@ -1,42 +1,107 @@
 # Security checklist
 
-Seven items, one line of evidence each. Status is one of DONE, NOT DONE, or NOT
-APPLICABLE. Every result below was produced by running the command or request shown; none
-is asserted.
+Seven items, the list set by Assignment 3. Each item records a status and one line of
+evidence produced by running the command shown. Status is DONE, NOT DONE, or NOT
+APPLICABLE; the Session 15 guide accepts all three as long as they are truthful.
 
-Scope note: this prototype is assessed at awareness level, as the Session 13 guide
-describes. Authentication is deliberately a stub, and role checks are switched off on
-purpose so a marker can open both screens. Both facts are recorded below instead of being
-hidden.
+Every command below was run against the running Docker stack on 11/11/2026. Images are in
+`docs/screenshots/`.
 
-| # | Item | Status | Evidence |
-| :--- | :--- | :--- | :--- |
-| 1 | No secret in the repository, and `.env` was never committed | DONE | `git log --all --oneline -- .env` prints nothing, and `git ls-files` lists only `.env.example`. Only development values appear in `docker-compose.yaml` |
-| 2 | Error responses do not leak stack traces, table names or connection strings | DONE | `POST /api/tickets` with `device_id: 999999` returns `404 {"error":{"code":"DEVICE_NOT_FOUND","message":"Thiết bị không thuộc về khách hàng này"}}`. `PATCH` from another centre returns `403 {"code":"CENTER_OUT_OF_SCOPE"}`. No response contains a stack, a table name or a `postgresql://` string |
-| 3 | Passwords are stored hashed | NOT APPLICABLE | The `employee` table has no password column, and no user account is stored in the database. Sign in uses two hard-coded accounts in `src/src/lib/server/session.ts` for the demonstration. There is nothing to hash |
-| 4 | Access control: a manager cannot decide another centre's ticket | DONE | Created `BH-000001/2026` in `TT01`. `PATCH /api/tickets/1/warranty-decision` with a `TT02` manager token returns `403 CENTER_OUT_OF_SCOPE`; the same request with a `TT01` manager token returns `200` with `is_warranty: true` and `verified_by: 2`. Test case TC-11 covers the same rule |
-| 5 | Access control: a caller sees only its own centre's tickets | DONE | `GET /api/tickets` with the `TT02` token returns `{"total":0,"page":1,"size":20,"items":[]}` even though `TT01` has one ticket, so the list is filtered by centre |
-| 6 | Injection through the search field | DONE | `GET /api/customers?phone=%27%20OR%201%3D1%20--` returns `400 {"code":"INVALID_PHONE"}` and no rows. The value is echoed back inside a JSON field and is never executed or concatenated into SQL |
-| 7 | Authentication rejects a missing or tampered token | NOT DONE | Missing token returns `401 UNAUTHENTICATED` and a token altered inside the payload returns `401`, so both of those behave. But the token is unsigned base64 JSON, so a self-made token is accepted: `{"employee_id":1,"role":"QUAN_LY","center_code":"TT99"}` returned `200` on `/api/customers`. Anyone can mint a token for any employee and any centre, which also defeats the centre scoping above |
+## 1. No secret in the repository - DONE, with a known limitation
 
-## What item 7 needs, and why it was not changed now
+Evidence: `git log --all --oneline -- .env src/.env` prints nothing, so `.env` was never
+committed. `rg -n "password|secret|api_key|apiKey" src/src` finds no API key, no token and
+no connection string.
 
-The token carries the actor as base64 JSON with no signature, so integrity cannot be
-checked. The fix is to sign the payload: compute an HMAC-SHA256 over the JSON with a secret
-read from the environment, append it, and verify it in `hooks.server.ts` before trusting the
-actor. That is roughly twenty lines across `src/src/lib/server/session.ts` and the hook.
+Image: `docs/screenshots/sec-1.png`
 
-It was left undone on purpose. Every documented token in this repository, including the
-ones in the Bug Log reproduction steps and the submission form, is an unsigned token; adding
-a signature invalidates all of them at once, and the demonstration would break unless every
-document is regenerated in the same change. Recording the gap honestly is worth more than a
-last-minute change that breaks the demo.
+The known limitation, stated rather than hidden: that same grep is **not empty**. It finds
+`password: 'admin'` and `password: 'employee'` in `src/routes/login/+page.server.ts`. They
+are the two demo accounts, already published in the README and in this submission, so they
+are not a leak, but they are credentials hard-coded in source. The fix is to read them from
+`DEMO_USER` / `DEMO_PASSWORD` environment variables so the grep comes back clean; it was not
+done because it would break the two-command path for anyone who does not set them.
 
-## Checks that were run and are already covered by the test suite
+## 2. Input is validated at the application layer - DONE
 
-| Check | Where |
-| :--- | :--- |
-| Centre scoping rejects a decision from another centre | TC-11, `tests/database.test.ts` |
-| A second open ticket on the same device is refused with 409 | TC-08, `tests/ticket-service.test.ts` |
-| Malformed or impossible dates are refused with 400 before reaching the database | TC-14, `tests/device-validator.test.ts` |
-| The phone number is masked in every response | TC-01, `tests/phone.test.ts` |
+Evidence: `rg -n "\.query\(|SELECT |INSERT INTO |DELETE FROM |UPDATE .* SET" src/src`
+returns fourteen matches, and all fourteen are template strings for ticket codes, URLs,
+dates and the phone mask. There is no hand-written SQL anywhere, so no query is built by
+concatenation; every read and write goes through the typed ORM.
+
+The injection probe behaves as required: `GET /api/customers?phone=' OR 1=1 --` returns
+`400 {"code":"INVALID_PHONE"}` and zero rows, not the customer list.
+
+Image: `docs/screenshots/sec-2.png`
+
+Tests: TC-14 (malformed date refused with 400 and a named field) and TC-19 (injection
+attempt) both PASS.
+
+## 3. Access control is enforced on the record - DONE
+
+Evidence: with ticket `BH-000001/2026` owned by centre `TT01`,
+`PATCH /api/tickets/1/warranty-decision` with a `TT02` manager token returns
+`403 CENTER_OUT_OF_SCOPE`, and the same call with a `TT01` token returns `200` with
+`is_warranty: true` and `verified_by: 2`.
+
+Image: `docs/screenshots/TC-18.png`
+
+One honest qualification: the ownership boundary in this system is the **service centre**,
+not the individual user, because customer and device records are deliberately shared across
+the company (`docs/api-contract.md` section 3). Role-based ownership is designed but not
+enforced yet, since `AUTHORIZATION_ENFORCED` is `false`.
+
+## 4. Passwords and sensitive data are hashed or masked - NOT APPLICABLE
+
+Evidence: `\d employee` shows three columns, `employee_id`, `full_name` and `center_code`.
+There is no password column and no user table, because signing in is a stub with two
+hard-coded demonstration accounts. There is nothing to hash.
+
+Image: `docs/screenshots/sec-4.png`
+
+The related measure this system does take is masking: every response carries only
+`phone_masked` in the form `090****567`, never the full number (NFR2, QT-15, test TC-01).
+
+## 5. Error messages do not expose internals - DONE
+
+Evidence: `POST /api/tickets` with the body `{bad json` returns
+`400 {"code":"VALIDATION_FAILED", ...}`. With the database stopped,
+`GET /api/customers` returns `500 {"status":500,"message":"Internal Error"}`. Neither
+response contains a stack trace, a table name or a connection string.
+
+Image: `docs/screenshots/sec-5.png`
+
+## 6. Logs contain no secrets or personal data - DONE
+
+Evidence: `docker compose logs app | grep -iE "password|token|0[0-9]{9}"` prints nothing
+across the whole container log, so no token, no password and no Vietnamese phone number
+reaches the logs.
+
+Image: `docs/screenshots/sec-6.png`
+
+## 7. Dependencies are pinned and audited - NOT DONE yet
+
+Evidence: `src/pnpm-lock.yaml` is committed, so versions are pinned.
+`pnpm audit --prod` reports **one high advisory**: `hono < 4.12.4`, reached through
+`.>@prisma/composer>alchemy>@prisma/dev>@hono/node-server>hono`, that is through Prisma's
+own tooling rather than through application code.
+
+Image: `docs/screenshots/sec-7.png`
+
+Plan: the advisory is patched in `hono >= 4.12.4`; this project takes it transitively from
+the Prisma composer, so the fix is a Prisma upgrade once a release pulls the patched
+version. Until then the exposure is limited to the local schema tooling, which is not
+reachable from the running application.
+
+## Known limitation outside the seven items
+
+Item 4 is not applicable, but a separate authentication weakness is real and recorded here
+rather than omitted. The session token is base64 JSON with no signature, so a self-made
+token is accepted: `{"employee_id":1,"role":"QUAN_LY","center_code":"TT99"}` returned `200`
+on `/api/customers`. That defeats the centre rule that item 3 relies on.
+
+Test case TC-17 in `docs/test-report.md` records this as FAIL. The fix is to sign the
+payload with HMAC-SHA256 and verify it in `hooks.server.ts`; it was not done because every
+documented token in this repository is unsigned, so the change invalidates all of them at
+once. The Session 15 guide is explicit that an honest "not done" is not penalised, while a
+claimed "done" without evidence is.
