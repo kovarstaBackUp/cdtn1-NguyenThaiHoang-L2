@@ -40,9 +40,10 @@
 | **DeepSeek** | Viết tài liệu API tiếng Anh cho bảy endpoint | docs/api-docs.md | Đếm lại số route trong mã, đối chiếu từng mã lỗi với app-error.ts và từng tham số với validator, sửa ba chỗ ghi sai |
 | **DeepSeek** | Viết Test Report và các ca kiểm bảo mật theo OWASP | docs/test-report.md | Chạy lại bộ test, chạy từng ca riêng để lấy output thật, ghi kết quả đúng như quan sát, gồm một ca ghi FAIL |
 | **DeepSeek** | Tạo Postman collection cho bảy endpoint | docs/postman-collection.json | Kiểm cú pháp JSON và đối chiếu từng request với lần gọi thật trước đó |
-| **DeepSeek** | Điều khiển Chrome chụp ảnh minh chứng | docs/screenshots/ | Mở ứng dụng thật để chụp ba màn hình và ba trạng thái; ảnh TC-01 đến TC-14 dựng từ chính output của lệnh chạy, không phải ảnh chụp màn hình terminal |
+| **DeepSeek** | Điều khiển Chrome chụp ảnh minh chứng | docs/screenshots/ | Ảnh 01 đến 08 chụp từ ứng dụng thật đang chạy. Ảnh TC-01 đến TC-20, sec-1 đến sec-7, result.png và bốn ảnh white-machine chụp hai phần đều là ảnh chụp terminal thật của các lần chạy lệnh |
 | **DeepSeek** | Thêm dịch vụ test vào compose và kịch bản tạo database test | src/docker-compose.yaml, src/docker/init/ | Chạy docker compose run --rm test, kiểm 14/14 PASS bên trong container |
 | **DeepSeek** | Viết lại README sang tiếng Anh | README.md | Đối chiếu từng mục với mã nguồn, sửa ba chỗ README nói sai so với hệ thống thật |
+| **DeepSeek** | Proof read và chỉnh sửa chính tả file pdf BT3 | BT3_NguyenThaiHoang_2374802010153 | Đối chiếu từng mục với nội dung đã có sẵn trong /docs|
 | **Không dùng** | usecase.drawio, architecture.drawio, wireframe.png, schema.dbml | - | Tự vẽ bằng drawio và ERD tự phân bổ và đối chiếu với các tài liệu đã được cấp và SRS |
 
 
@@ -54,4 +55,4 @@
 > **"Tôi xác nhận đã đọc, hiểu và chịu trách nhiệm về toàn bộ nội dung nộp."**
 
 * **Chữ ký / Họ tên sinh viên:** Nguyễn Thái Hoàng
-* **Ngày khai báo:** 7/11/2026
+* **Ngày khai báo:** 14/11/2026
