@@ -34,6 +34,10 @@ docker compose version
    cd cdtn1-NguyenThaiHoang-L2/src
    ```
 
+   If you cloned into the current directory instead, with `git clone <url> .`, then the
+   repository root is already your working directory and the step becomes `cd src`. The
+   compose file is always in `src/`, never at the repository root.
+
 3. Build and start everything:
 
    ```
