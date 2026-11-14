@@ -22,21 +22,42 @@ docker compose version
 
 ## 2. Setup steps
 
-```
-git clone --branch v1.0 https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2.git
-cd cdtn1-NguyenThaiHoang-L2/src
-docker compose up -d --build
-```
+1. Clone the repository at the tag the submission is graded on:
 
-That is one command after cloning. Nothing else is required, and there is no `.env` step
-because every environment variable the containers need is set inside `docker-compose.yaml`.
+   ```
+   git clone --branch v1.0 https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2.git
+   ```
 
-If you ran the stack before on this machine, start from a clean state instead:
+2. Enter the application directory, which is where the compose file lives:
 
-```
-docker compose down -v
-docker compose up -d --build
-```
+   ```
+   cd cdtn1-NguyenThaiHoang-L2/src
+   ```
+
+3. Build and start everything:
+
+   ```
+   docker compose up -d --build
+   ```
+
+That is one command after cloning, so two at most. Nothing else is required, and there is no
+`.env` step because every environment variable the containers need is set inside
+`docker-compose.yaml`.
+
+If you ran the stack on this machine before, start from a clean state instead. Step 3
+becomes two commands, run in this order:
+
+1. Delete the containers and the database volume:
+
+   ```
+   docker compose down -v
+   ```
+
+2. Build and start again:
+
+   ```
+   docker compose up -d --build
+   ```
 
 `down -v` deletes the database volume, so the database is created again from nothing. Do
 not skip it when re-running the white machine test: a leftover container can start but no
@@ -56,21 +77,27 @@ successfully.
 
 ## 3. Environment variables
 
-The containers read these from `docker-compose.yaml`. You do not set them by hand.
+The containers read these from `docker-compose.yaml`. You do not set them by hand; the
+sample values below are the ones the compose file uses, and they work as they are.
 
-| Variable | Where it is set | Value |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | `init`, `app`, `test` | `postgresql://postgres:postgres@db:5432/capstoneone` |
-| `TEST_DATABASE_URL` | `test` | `postgresql://postgres:postgres@db:5432/capstoneone_test` |
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | `db` | `capstoneone`, `postgres`, `postgres` |
-| `NODE_ENV`, `HOST`, `PORT` | `app` | `production`, `0.0.0.0`, `3000` |
+| Name | Meaning | Sample value | Required |
+| :--- | :--- | :--- | :--- |
+| `DATABASE_URL` | PostgreSQL connection string used by the application and by the schema step | `postgresql://postgres:postgres@db:5432/capstoneone` | Yes, set by the compose file |
+| `TEST_DATABASE_URL` | Database the test suite runs against, kept apart from the application database | `postgresql://postgres:postgres@db:5432/capstoneone_test` | Yes for the `test` service, set by the compose file |
+| `POSTGRES_DB` | Name of the database created inside the `db` container | `capstoneone` | Yes, set by the compose file |
+| `POSTGRES_USER` | Database user, also used by the `pg_isready` healthcheck | `postgres` | Yes, set by the compose file |
+| `POSTGRES_PASSWORD` | Database password. A development value for the local container only | `postgres` | Yes, set by the compose file |
+| `NODE_ENV` | Runtime mode of the application image | `production` | Yes, set by the compose file |
+| `HOST` | Interface the application binds to inside the container | `0.0.0.0` | Yes, set by the compose file |
+| `PORT` | Port the application listens on inside the container | `3000` | Yes, set by the compose file |
+| `DEV_EMPLOYEE_ID` | Optional development identity used for `/api` calls made outside Docker | `1` | No |
+| `DEV_ROLE` | Role that goes with the identity above | `NHAN_VIEN` | No |
+| `DEV_CENTER_CODE` | Service centre that goes with the identity above | `TT01` | No |
 
-Those credentials are development values for a local container only. Nothing in this
-repository is a production secret, and no `.env` file is committed; `.env.example` lists
-the variables for the non-Docker development flow.
-
-If you run the application outside Docker with `pnpm run dev`, then `.env` is needed and
-`.env.example` documents it, including the optional `DEV_*` identity variables.
+Nothing in this repository is a production secret, and no `.env` file is committed;
+`.env.example` lists the variables needed by the non-Docker development flow, including the
+three `DEV_*` ones. Those credentials are development values for a local container, and the
+guide recommends changing them before any deployment.
 
 ## 4. Sample data
 
