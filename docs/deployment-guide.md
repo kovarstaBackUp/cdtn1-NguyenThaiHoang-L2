@@ -171,6 +171,50 @@ still gives 6 categories, 2 employees, 1 customer and 3 devices.
 
 The application itself is then at `http://localhost:3000/`.
 
+## 6. Deployed instance
+
+This submission also runs publicly at **https://capstoneone.kovarsta.com**.
+
+It is not hosted on a cloud free tier. It runs on the author's own homelab machine and is
+published through a Cloudflare Tunnel, so no inbound port is open on the host and no
+platform specific configuration file exists.
+
+Steps that produced it:
+
+1. On the homelab machine, install Docker Engine with Compose v2, Git and `cloudflared`, and
+   verify Docker with `docker compose version`.
+
+2. Clone at the tag and start the stack exactly as in section 2:
+
+   ```
+   git clone --branch v1.0 https://github.com/kovarstaBackUp/cdtn1-NguyenThaiHoang-L2.git
+   cd cdtn1-NguyenThaiHoang-L2/src
+   docker compose up -d --build
+   ```
+
+3. In the Cloudflare dashboard, create a named tunnel and add a public hostname
+   `capstoneone.kovarsta.com` whose service is `http://localhost:3000`. Copy the tunnel
+   token the dashboard shows.
+
+4. Run the tunnel on the same machine, passing the token from the host environment:
+
+   ```
+   cloudflared tunnel run --token <TUNNEL_TOKEN>
+   ```
+
+5. Verify from outside the network, the same way section 5 verifies locally: `GET /login`
+   returns `200`, and `GET /api/issue-categories` returns `401` without a token.
+
+The application variables do not change: the compose file already sets `DATABASE_URL` and
+the rest for the containers. The only new value is the Cloudflare tunnel token, which is a
+real secret. It stays in the host environment, is never committed and never written into an
+image. The database is the same local PostgreSQL container from section 1, so the public URL
+serves exactly the sample data described in section 4.
+
+One operational note: the hostname is reachable only while the tunnel process is running. If
+`cloudflared` stops, the public URL fails even though the containers are still healthy, so
+check the tunnel before a demonstration.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
